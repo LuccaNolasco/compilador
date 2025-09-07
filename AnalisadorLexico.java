@@ -86,28 +86,166 @@ public class AnalisadorLexico {
         }
     }
 
-    // MÉTODO proximoToken ATUALIZADO
-    public Token proximoToken() {
-        // 1. Ignora qualquer espaço em branco antes do próximo token
-        ignorarEspacosEmBranco();
+     // MÉTODO proximoToken ATUALIZADO
+   public Token proximoToken() {
+    ignorarEspacosEmBranco();
 
-        // 2. Verifica se chegamos ao fim do arquivo depois de ignorar os espaços
-        if (posicaoAtual >= codigoFonte.length()) {
-            return new Token(TipoToken.FIM_DE_ARQUIVO, "\0");
-        }
+    if (posicaoAtual >= codigoFonte.length()) {
+        return new Token(TipoToken.FIM_DE_ARQUIVO, "\0");
+    }
 
-        // 3. O resto da lógica para reconhecer o token
-        char caractereAtual = codigoFonte.charAt(posicaoAtual);
+    char caractereAtual = codigoFonte.charAt(posicaoAtual);
 
-        // Verifica se é um símbolo simples que já mapeamos
-        if (SIMBOLOS_SIMPLES.containsKey(caractereAtual)) {
+    // Primeiro, trata os tokens que podem ter múltiplos caracteres
+    if (Character.isLetter(caractereAtual)) {
+        return reconhecerIdentificador();
+    }
+
+    if (Character.isDigit(caractereAtual)) {
+        return reconhecerNumero();
+    }
+
+    // Agora, trata os símbolos. Note que o avanço da posição (posicaoAtual++)
+    // agora é feito DENTRO de cada case.
+    switch (caractereAtual) {
+        case '(':
             posicaoAtual++;
-            return SIMBOLOS_SIMPLES.get(caractereAtual);
+            return new Token(TipoToken.SIMBOLO_ESPECIAL, "(");
+        case ')':
+            posicaoAtual++;
+            return new Token(TipoToken.SIMBOLO_ESPECIAL, ")");
+        case ';':
+            posicaoAtual++;
+            return new Token(TipoToken.SIMBOLO_ESPECIAL, ";");
+        case ',':
+            posicaoAtual++;
+            return new Token(TipoToken.SIMBOLO_ESPECIAL, ",");
+        case '.':
+            posicaoAtual++;
+            return new Token(TipoToken.SIMBOLO_ESPECIAL, ".");
+        case '+':
+            posicaoAtual++;
+            return new Token(TipoToken.OPERADOR_ARITMETICO, "+");
+        case '-':
+            posicaoAtual++;
+            return new Token(TipoToken.OPERADOR_ARITMETICO, "-");
+        case '*':
+            posicaoAtual++;
+            return new Token(TipoToken.OPERADOR_ARITMETICO, "*");
+        case '/':
+            posicaoAtual++;
+            // Na próxima etapa, vamos adicionar a lógica para comentários aqui (/*)
+            return new Token(TipoToken.OPERADOR_ARITMETICO, "/");
+        
+        case ':':
+            if (peek() == '=') {
+                posicaoAtual += 2; // Avança 2 posições para consumir ':='
+                return new Token(TipoToken.ATRIBUICAO, ":=");
+            } else {
+                posicaoAtual++; // Avança 1 posição para consumir ':'
+                return new Token(TipoToken.SIMBOLO_ESPECIAL, ":");
+            }
+
+        case '<':
+            if (peek() == '=') {
+                posicaoAtual += 2;
+                return new Token(TipoToken.OPERADOR_RELACIONAL, "<=");
+            } else if (peek() == '>') {
+                posicaoAtual += 2;
+                return new Token(TipoToken.OPERADOR_RELACIONAL, "<>");
+            } else {
+                posicaoAtual++;
+                return new Token(TipoToken.OPERADOR_RELACIONAL, "<");
+            }
+        
+        case '>':
+            if (peek() == '=') {
+                posicaoAtual += 2;
+                return new Token(TipoToken.OPERADOR_RELACIONAL, ">=");
+            } else {
+                posicaoAtual++;
+                return new Token(TipoToken.OPERADOR_RELACIONAL, ">");
+            }
+
+        case '=':
+            posicaoAtual++;
+            return new Token(TipoToken.OPERADOR_RELACIONAL, "=");
+
+        default:
+            System.err.println("Caractere desconhecido: " + caractereAtual);
+            posicaoAtual++;
+            return proximoToken();
+    }
+}
+
+       private Token reconhecerIdentificador() {
+        int posicaoInicial = posicaoAtual;
+        // Avança enquanto for letra ou dígito
+        while (posicaoAtual < codigoFonte.length() && 
+               Character.isLetterOrDigit(codigoFonte.charAt(posicaoAtual))) {
+            posicaoAtual++;
         }
         
-        // Se não for um símbolo conhecido, por enquanto, vamos apenas avançar
-        // Nas próximas etapas, trataremos identificadores, números, etc. aqui.
-        posicaoAtual++;
-        return proximoToken();
+        // Extrai o lexema do código fonte
+        String lexema = codigoFonte.substring(posicaoInicial, posicaoAtual);
+        
+        // Verifica se é uma palavra reservada ou um identificador comum
+        TipoToken tipo = PALAVRAS_RESERVADAS.getOrDefault(lexema.toLowerCase(), TipoToken.IDENTIFICADOR);
+        
+        return new Token(tipo, lexema);
+    }
+
+     private Token reconhecerNumero() {
+        int posicaoInicial = posicaoAtual;
+        boolean ehReal = false;
+
+        // Consome a parte inteira do número
+        while (posicaoAtual < codigoFonte.length() && 
+               Character.isDigit(codigoFonte.charAt(posicaoAtual))) {
+            posicaoAtual++;
+        }
+
+        // Verifica se há uma parte fracionária (tornando o número real)
+        if (posicaoAtual < codigoFonte.length() && codigoFonte.charAt(posicaoAtual) == '.') {
+            ehReal = true;
+            posicaoAtual++; // Consome o '.'
+
+            // Consome a parte fracionária
+            while (posicaoAtual < codigoFonte.length() && 
+                   Character.isDigit(codigoFonte.charAt(posicaoAtual))) {
+                posicaoAtual++;
+            }
+        }
+        
+        // Verifica a notação científica (ex: 1.23e-04), que também o torna real
+        if (posicaoAtual < codigoFonte.length() && 
+            (codigoFonte.charAt(posicaoAtual) == 'e' || codigoFonte.charAt(posicaoAtual) == 'E')) {
+            ehReal = true;
+            posicaoAtual++; // Consome o 'e' ou 'E'
+
+            // Verifica se há um sinal de '+' ou '-' no expoente
+            if (posicaoAtual < codigoFonte.length() && 
+                (codigoFonte.charAt(posicaoAtual) == '+' || codigoFonte.charAt(posicaoAtual) == '-')) {
+                posicaoAtual++; // Consome o sinal
+            }
+
+            // Consome os dígitos do expoente
+            while (posicaoAtual < codigoFonte.length() && 
+                   Character.isDigit(codigoFonte.charAt(posicaoAtual))) {
+                posicaoAtual++;
+            }
+        }
+
+        String lexema = codigoFonte.substring(posicaoInicial, posicaoAtual);
+        TipoToken tipo = ehReal ? TipoToken.NUMERO_REAL : TipoToken.NUMERO_INTEIRO;
+
+        return new Token(tipo, lexema);
+    }
+
+      private char peek() {
+        if (posicaoAtual + 1 >= codigoFonte.length()) {
+            return '\0'; // Retorna nulo se estivermos no fim
+        }
+        return codigoFonte.charAt(posicaoAtual + 1);
     }
 }

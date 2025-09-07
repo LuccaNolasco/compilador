@@ -1,4 +1,8 @@
-program teste;
+program testeNumeros;
+const
+    pi := 3.1416;
+var
+    idade := 25;
 begin
-    read(x);
+    idade := idade + 1;
 end.
