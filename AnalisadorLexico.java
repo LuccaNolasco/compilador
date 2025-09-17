@@ -5,7 +5,10 @@ public class AnalisadorLexico {
 
   private String codigoFonte;
   private int posicaoAtual;
-
+  private Token tokenAnterior; // Para rastrear o token anterior
+  
+  // Controle para exibir ou não o token FIM_DE_ARQUIVO
+  private boolean exibirFimDeArquivo = false; // Desativado por padrão
 
     private static final Map<String, TipoToken> PALAVRAS_RESERVADAS = new HashMap<>();
 
@@ -14,54 +17,54 @@ public class AnalisadorLexico {
 
    static {
 
-        PALAVRAS_RESERVADAS.put("absolute", TipoToken.ABSOLUTE);
-        PALAVRAS_RESERVADAS.put("array", TipoToken.ARRAY);
-        PALAVRAS_RESERVADAS.put("begin", TipoToken.BEGIN);
-        PALAVRAS_RESERVADAS.put("case", TipoToken.CASE);
-        PALAVRAS_RESERVADAS.put("char", TipoToken.CHAR);
-        PALAVRAS_RESERVADAS.put("const", TipoToken.CONST);
-        PALAVRAS_RESERVADAS.put("div", TipoToken.DIV);
-        PALAVRAS_RESERVADAS.put("do", TipoToken.DO);
-        PALAVRAS_RESERVADAS.put("dowto", TipoToken.DOWTO);
-        PALAVRAS_RESERVADAS.put("else", TipoToken.ELSE);
-        PALAVRAS_RESERVADAS.put("end", TipoToken.END);
-        PALAVRAS_RESERVADAS.put("external", TipoToken.EXTERNAL);
-        PALAVRAS_RESERVADAS.put("file", TipoToken.FILE);
-        PALAVRAS_RESERVADAS.put("for", TipoToken.FOR);
-        PALAVRAS_RESERVADAS.put("forward", TipoToken.FORWARD);
-        PALAVRAS_RESERVADAS.put("func", TipoToken.FUNC);
-        PALAVRAS_RESERVADAS.put("function", TipoToken.FUNCTION);
-        PALAVRAS_RESERVADAS.put("goto", TipoToken.GOTO);
-        PALAVRAS_RESERVADAS.put("if", TipoToken.IF);
-        PALAVRAS_RESERVADAS.put("implementation", TipoToken.IMPLEMENTATION);
-        PALAVRAS_RESERVADAS.put("integer", TipoToken.INTEGER);
-        PALAVRAS_RESERVADAS.put("interface", TipoToken.INTERFACE);
-        PALAVRAS_RESERVADAS.put("interrupt", TipoToken.INTERRUPT);
-        PALAVRAS_RESERVADAS.put("label", TipoToken.LABEL);
-        PALAVRAS_RESERVADAS.put("main", TipoToken.MAIN);
-        PALAVRAS_RESERVADAS.put("nil", TipoToken.NIL);
-        PALAVRAS_RESERVADAS.put("nit", TipoToken.NIT);
-        PALAVRAS_RESERVADAS.put("of", TipoToken.OF);
-        PALAVRAS_RESERVADAS.put("packed", TipoToken.PACKED);
-        PALAVRAS_RESERVADAS.put("proc", TipoToken.PROC);
-        PALAVRAS_RESERVADAS.put("program", TipoToken.PROGRAM);
-        PALAVRAS_RESERVADAS.put("real", TipoToken.REAL);
-        PALAVRAS_RESERVADAS.put("record", TipoToken.RECORD);
-        PALAVRAS_RESERVADAS.put("repeat", TipoToken.REPEAT);
-        PALAVRAS_RESERVADAS.put("set", TipoToken.SET);
-        PALAVRAS_RESERVADAS.put("shl", TipoToken.SHL);
-        PALAVRAS_RESERVADAS.put("shr", TipoToken.SHR);
-        PALAVRAS_RESERVADAS.put("string", TipoToken.STRING);
-        PALAVRAS_RESERVADAS.put("then", TipoToken.THEN);
-        PALAVRAS_RESERVADAS.put("to", TipoToken.TO);
-        PALAVRAS_RESERVADAS.put("type", TipoToken.TYPE);
-        PALAVRAS_RESERVADAS.put("unit", TipoToken.UNIT);
-        PALAVRAS_RESERVADAS.put("until", TipoToken.UNTIL);
-        PALAVRAS_RESERVADAS.put("uses", TipoToken.USES);
-        PALAVRAS_RESERVADAS.put("var", TipoToken.VAR);
-        PALAVRAS_RESERVADAS.put("while", TipoToken.WHILE);
-        PALAVRAS_RESERVADAS.put("with", TipoToken.WITH);
-        PALAVRAS_RESERVADAS.put("xor", TipoToken.XOR);
+        PALAVRAS_RESERVADAS.put("absolute", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("array", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("begin", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("case", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("char", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("const", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("div", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("do", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("dowto", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("else", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("end", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("external", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("file", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("for", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("forward", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("func", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("function", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("goto", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("if", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("implementation", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("integer", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("interface", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("interrupt", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("label", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("main", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("nil", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("nit", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("of", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("packed", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("proc", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("program", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("real", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("record", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("repeat", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("set", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("shl", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("shr", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("string", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("then", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("to", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("type", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("unit", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("until", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("uses", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("var", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("while", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("with", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("xor", TipoToken.PALAVRA_RESERVADA);
 
         SIMBOLOS_SIMPLES.put('(', new Token(TipoToken.SIMBOLO_ESPECIAL, "("));
         SIMBOLOS_SIMPLES.put(')', new Token(TipoToken.SIMBOLO_ESPECIAL, ")"));
@@ -76,6 +79,7 @@ public class AnalisadorLexico {
     public AnalisadorLexico(String codigoFonte) {
         this.codigoFonte = codigoFonte;
         this.posicaoAtual = 0;
+        this.tokenAnterior = null; // Inicializa como null
     }
 
 
@@ -91,18 +95,30 @@ public class AnalisadorLexico {
     ignorarEspacosEmBranco();
 
     if (posicaoAtual >= codigoFonte.length()) {
-        return new Token(TipoToken.FIM_DE_ARQUIVO, "\0");
+        if (exibirFimDeArquivo) {
+            Token token = new Token(TipoToken.FIM_DE_ARQUIVO, "\0");
+            tokenAnterior = token;
+            return token;
+        } else {
+            // Se não deve exibir FIM_DE_ARQUIVO, retorna null ou continua o loop
+            // Para manter compatibilidade, vamos retornar FIM_DE_ARQUIVO mas sem exibir
+            return null; // Indica fim sem token
+        }
     }
 
     char caractereAtual = codigoFonte.charAt(posicaoAtual);
 
     // Primeiro, trata os tokens que podem ter múltiplos caracteres
     if (Character.isLetter(caractereAtual)) {
-        return reconhecerIdentificador();
+        Token token = reconhecerIdentificador();
+        tokenAnterior = token;
+        return token;
     }
 
     if (Character.isDigit(caractereAtual)) {
-        return reconhecerNumero();
+        Token token = reconhecerNumero();
+        tokenAnterior = token;
+        return token;
     }
 
     // Agora, trata os símbolos. Note que o avanço da posição (posicaoAtual++)
@@ -110,66 +126,139 @@ public class AnalisadorLexico {
     switch (caractereAtual) {
         case '(':
             posicaoAtual++;
-            return new Token(TipoToken.SIMBOLO_ESPECIAL, "(");
+            Token token1 = new Token(TipoToken.SIMBOLO_ESPECIAL, "(");
+            tokenAnterior = token1;
+            return token1;
         case ')':
             posicaoAtual++;
-            return new Token(TipoToken.SIMBOLO_ESPECIAL, ")");
+            Token token2 = new Token(TipoToken.SIMBOLO_ESPECIAL, ")");
+            tokenAnterior = token2;
+            return token2;
         case ';':
             posicaoAtual++;
-            return new Token(TipoToken.SIMBOLO_ESPECIAL, ";");
+            Token token3 = new Token(TipoToken.SIMBOLO_ESPECIAL, ";");
+            tokenAnterior = token3;
+            return token3;
         case ',':
             posicaoAtual++;
-            return new Token(TipoToken.SIMBOLO_ESPECIAL, ",");
+            Token token4 = new Token(TipoToken.SIMBOLO_ESPECIAL, ",");
+            tokenAnterior = token4;
+            return token4;
         case '.':
-            posicaoAtual++;
-            return new Token(TipoToken.SIMBOLO_ESPECIAL, ".");
+            // Verifica se o token anterior é 'end' (PALAVRA_RESERVADA)
+            if (tokenAnterior != null && tokenAnterior.tipo == TipoToken.PALAVRA_RESERVADA && tokenAnterior.lexema.equals("end")) {
+                posicaoAtual++;
+                Token tokenFim = new Token(TipoToken.FIM, ".");
+                tokenAnterior = tokenFim;
+                return tokenFim;
+            } else {
+                posicaoAtual++;
+                Token token5 = new Token(TipoToken.SIMBOLO_ESPECIAL, ".");
+                tokenAnterior = token5;
+                return token5;
+            }
         case '+':
             posicaoAtual++;
-            return new Token(TipoToken.OPERADOR_ARITMETICO, "+");
+            Token token6 = new Token(TipoToken.OPERADOR_ARITMETICO, "+");
+            tokenAnterior = token6;
+            return token6;
         case '-':
-            posicaoAtual++;
-            return new Token(TipoToken.OPERADOR_ARITMETICO, "-");
+            // Regra: Se "-" for precedido de um número ou identificador, é operador aritmético
+            if (tokenAnterior != null && 
+                (tokenAnterior.tipo == TipoToken.NUMERO_INTEIRO || 
+                 tokenAnterior.tipo == TipoToken.NUMERO_REAL ||
+                 tokenAnterior.tipo == TipoToken.IDENTIFICADOR)) {
+                // Precedido de número ou identificador -> operador aritmético
+                posicaoAtual++;
+                Token token = new Token(TipoToken.OPERADOR_ARITMETICO, "-");
+                tokenAnterior = token;
+                return token;
+            } else {
+                // Não precedido de número ou identificador -> verifica se o próximo é dígito
+                if (posicaoAtual + 1 < codigoFonte.length() && 
+                    Character.isDigit(codigoFonte.charAt(posicaoAtual + 1))) {
+                    // Próximo é dígito -> número negativo
+                    Token numeroNegativo = reconhecerNumero();
+                    tokenAnterior = numeroNegativo;
+                    return numeroNegativo;
+                } else {
+                    // Próximo não é dígito -> operador aritmético
+                    posicaoAtual++;
+                    Token token = new Token(TipoToken.OPERADOR_ARITMETICO, "-");
+                    tokenAnterior = token;
+                    return token;
+                }
+            }
         case '*':
             posicaoAtual++;
-            return new Token(TipoToken.OPERADOR_ARITMETICO, "*");
+            Token token7 = new Token(TipoToken.OPERADOR_ARITMETICO, "*");
+            tokenAnterior = token7;
+            return token7;
         case '/':
-            posicaoAtual++;
-            // Na próxima etapa, vamos adicionar a lógica para comentários aqui (/*)
-            return new Token(TipoToken.OPERADOR_ARITMETICO, "/");
+            // Verifica se é início de comentário /*
+            if (posicaoAtual + 1 < codigoFonte.length() && 
+                codigoFonte.charAt(posicaoAtual + 1) == '*') {
+                // É um comentário, ignora tudo até encontrar */
+                ignorarComentario();
+                // Após ignorar o comentário, continua analisando o próximo token
+                return proximoToken();
+            } else {
+                // É apenas um operador de divisão
+                posicaoAtual++;
+                Token token8 = new Token(TipoToken.OPERADOR_ARITMETICO, "/");
+                tokenAnterior = token8;
+                return token8;
+            }
         
         case ':':
             if (peek() == '=') {
                 posicaoAtual += 2; // Avança 2 posições para consumir ':='
-                return new Token(TipoToken.ATRIBUICAO, ":=");
+                Token token9 = new Token(TipoToken.ATRIBUICAO, ":=");
+                tokenAnterior = token9;
+                return token9;
             } else {
                 posicaoAtual++; // Avança 1 posição para consumir ':'
-                return new Token(TipoToken.SIMBOLO_ESPECIAL, ":");
+                Token token10 = new Token(TipoToken.SIMBOLO_ESPECIAL, ":");
+                tokenAnterior = token10;
+                return token10;
             }
 
         case '<':
             if (peek() == '=') {
                 posicaoAtual += 2;
-                return new Token(TipoToken.OPERADOR_RELACIONAL, "<=");
+                Token token11 = new Token(TipoToken.OPERADOR_RELACIONAL, "<=");
+                tokenAnterior = token11;
+                return token11;
             } else if (peek() == '>') {
                 posicaoAtual += 2;
-                return new Token(TipoToken.OPERADOR_RELACIONAL, "<>");
+                Token token12 = new Token(TipoToken.OPERADOR_RELACIONAL, "<>");
+                tokenAnterior = token12;
+                return token12;
             } else {
                 posicaoAtual++;
-                return new Token(TipoToken.OPERADOR_RELACIONAL, "<");
+                Token token13 = new Token(TipoToken.OPERADOR_RELACIONAL, "<");
+                tokenAnterior = token13;
+                return token13;
             }
         
         case '>':
             if (peek() == '=') {
                 posicaoAtual += 2;
-                return new Token(TipoToken.OPERADOR_RELACIONAL, ">=");
+                Token token14 = new Token(TipoToken.OPERADOR_RELACIONAL, ">=");
+                tokenAnterior = token14;
+                return token14;
             } else {
                 posicaoAtual++;
-                return new Token(TipoToken.OPERADOR_RELACIONAL, ">");
+                Token token15 = new Token(TipoToken.OPERADOR_RELACIONAL, ">");
+                tokenAnterior = token15;
+                return token15;
             }
 
         case '=':
             posicaoAtual++;
-            return new Token(TipoToken.OPERADOR_RELACIONAL, "=");
+            Token token16 = new Token(TipoToken.OPERADOR_RELACIONAL, "=");
+            tokenAnterior = token16;
+            return token16;
 
         default:
             System.err.println("Caractere desconhecido: " + caractereAtual);
@@ -198,6 +287,11 @@ public class AnalisadorLexico {
      private Token reconhecerNumero() {
         int posicaoInicial = posicaoAtual;
         boolean ehReal = false;
+
+        // Verifica se há um sinal negativo no início
+        if (posicaoAtual < codigoFonte.length() && codigoFonte.charAt(posicaoAtual) == '-') {
+            posicaoAtual++; // Consome o sinal negativo
+        }
 
         // Consome a parte inteira do número
         while (posicaoAtual < codigoFonte.length() && 
@@ -247,5 +341,43 @@ public class AnalisadorLexico {
             return '\0'; // Retorna nulo se estivermos no fim
         }
         return codigoFonte.charAt(posicaoAtual + 1);
+    }
+
+    // Método para ativar/desativar a exibição do token FIM_DE_ARQUIVO
+    public void setExibirFimDeArquivo(boolean exibir) {
+        this.exibirFimDeArquivo = exibir;
+    }
+    
+    // Método para verificar se está exibindo FIM_DE_ARQUIVO
+    public boolean isExibindoFimDeArquivo() {
+        return this.exibirFimDeArquivo;
+    }
+
+    // Método para verificar se o token anterior é um número ou identificador
+    private boolean tokenAnteriorEhNumeroOuIdentificador() {
+        return tokenAnterior != null && 
+               (tokenAnterior.tipo == TipoToken.NUMERO_INTEIRO || 
+                tokenAnterior.tipo == TipoToken.NUMERO_REAL || 
+                tokenAnterior.tipo == TipoToken.IDENTIFICADOR);
+    }
+    
+    // Método para ignorar comentários /* */
+    private void ignorarComentario() {
+        // Avança além do /*
+        posicaoAtual += 2;
+        
+        // Procura pelo fim do comentário */
+        while (posicaoAtual + 1 < codigoFonte.length()) {
+            if (codigoFonte.charAt(posicaoAtual) == '*' && 
+                codigoFonte.charAt(posicaoAtual + 1) == '/') {
+                // Encontrou o fim do comentário, avança além do */
+                posicaoAtual += 2;
+                return;
+            }
+            posicaoAtual++;
+        }
+        
+        // Se chegou aqui, o comentário não foi fechado (erro, mas vamos ignorar até o fim)
+        posicaoAtual = codigoFonte.length();
     }
 }

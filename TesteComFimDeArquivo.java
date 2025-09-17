@@ -2,25 +2,25 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class Main {
+public class TesteComFimDeArquivo {
 
     public static void main(String[] args) {
-        // O nome do arquivo de entrada
         String nomeArquivo = "arquivo.txt";
 
         try {
-       
             String codigoFonte = new String(Files.readAllBytes(Paths.get(nomeArquivo)));
-        
+            
             AnalisadorLexico analisador = new AnalisadorLexico(codigoFonte);
-
-            // Pede tokens ao analisador um por um, até encontrar o fim do arquivo
+            
+            // Ativando a exibição do token FIM_DE_ARQUIVO
+            analisador.setExibirFimDeArquivo(true);
+            
+            System.out.println("=== Teste com FIM_DE_ARQUIVO ativado ===");
+            
             Token token;
             do {
                 token = analisador.proximoToken();
-                // Verifica se o token não é null (fim de arquivo quando desabilitado)
                 if (token != null) {
-                    // Imprime o token no formato <lexema, TIPO>
                     System.out.println(token);
                 }
             } while (token != null && token.tipo != TipoToken.FIM_DE_ARQUIVO);

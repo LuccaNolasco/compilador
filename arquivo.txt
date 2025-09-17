@@ -1,8 +1,15 @@
-program testeNumeros;
-const
-    pi := 3.1416;
-var
-    idade := 25;
+program teste;
+/* inicio do programa */
+var x,y: integer;
+const pi := 3.1416;
+
 begin
-    idade := idade + 1;
+read(x);
+if (x &gt; y) then
+y := x ;
+else
+
+y := -x;
+writeln(x);
+write(y);
 end.
