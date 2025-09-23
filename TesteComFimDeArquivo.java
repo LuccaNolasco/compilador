@@ -2,6 +2,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import lexico.AnalisadorLexico;
+import lexico.TipoToken;
+import lexico.Token;
+
 public class TesteComFimDeArquivo {
 
     public static void main(String[] args) {
