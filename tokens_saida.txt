@@ -1,0 +1,19 @@
+<program, PALAVRA_RESERVADA>
+<teste, IDENTIFICADOR>
+<;, SIMBOLO_ESPECIAL>
+<x, IDENTIFICADOR>
+<:=, ATRIBUICAO>
+<20, NUMERO_INTEIRO>
+<y, IDENTIFICADOR>
+<:=, ATRIBUICAO>
+<x, IDENTIFICADOR>
+<-, OPERADOR_ARITMETICO>
+<5, NUMERO_INTEIRO>
+<end, PALAVRA_RESERVADA>
+<., FIM>
+
+========================================
+       CARACTERES NÃO IDENTIFICADOS
+========================================
+Nenhum caractere não identificado encontrado.
+========================================

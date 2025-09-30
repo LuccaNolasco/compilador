@@ -31,7 +31,7 @@ public class TelaInicial {
         root.setStyle("-fx-background-color: #f0f8ff;");
         
         // Título
-        Label titulo = new Label("Σ ★ - Rei delas");
+        Label titulo = new Label("Σ ★ - O real Sigma da Bahia");
         titulo.setFont(Font.font("Arial", FontWeight.BOLD, 28));
         titulo.setStyle("-fx-text-fill: #2c3e50;");
         
@@ -40,7 +40,7 @@ public class TelaInicial {
         imagemProfessor.setAlignment(Pos.CENTER);
         
         // Imagem principal
-        ImageView imagemPrincipal = criarImageView("gui/images/zequinha.jpeg", 300, 300);
+        ImageView imagemPrincipal = criarImageView("gui/images/realSigma.png", 300, 300);
         
         imagemProfessor.getChildren().add(imagemPrincipal);
         
@@ -68,16 +68,12 @@ public class TelaInicial {
         // Área adicional para mais imagens do professor
         HBox imagensAdicionais = new HBox(20);
         imagensAdicionais.setAlignment(Pos.CENTER);
+    
         
-        // Imagens adicionais sem legendas
-        ImageView imagem2 = criarImageView("gui/images/zequinha2.jpeg", 200, 200);
-        ImageView imagem3 = criarImageView("gui/images/zequinha3.jpeg", 200, 200);
-        
-        imagensAdicionais.getChildren().addAll(imagem2, imagem3);
         
         root.getChildren().addAll(titulo, imagemProfessor, botoesContainer, imagensAdicionais);
         
-        return new Scene(root, 500, 720);
+        return new Scene(root, 600, 720);
     }
     
     private void configurarBotao(Button botao, String cor, boolean ativo) {

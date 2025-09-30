@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Locale;
 
 public class TelaAnalisadorLexico {
     
@@ -28,6 +29,50 @@ public class TelaAnalisadorLexico {
         this.mainApp = mainApp;
     }
     
+    /**
+     * Configura o input method para layout de teclado brasileiro em controles de texto
+     */
+    private void configurarInputMethodBrasileiro(Control controle) {
+        // Configurar propriedades específicas para layout brasileiro
+        controle.getProperties().put("javafx.scene.control.skin.behavior.TextInputControlBehavior.locale", new Locale("pt", "BR"));
+        
+        // Adicionar listener para garantir que o locale seja aplicado
+        controle.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                // Quando o controle recebe foco, garantir que o locale brasileiro está ativo
+                Locale.setDefault(new Locale("pt", "BR"));
+                
+                // Configurar propriedades específicas para input method
+                System.setProperty("java.awt.im.style", "on-the-spot");
+                System.setProperty("user.language", "pt");
+                System.setProperty("user.country", "BR");
+            }
+        });
+        
+        // Configurar propriedades CSS para suporte a caracteres especiais brasileiros
+        String estilo = controle.getStyle();
+        if (estilo == null) estilo = "";
+        
+        // Adicionar configurações específicas para UTF-8 e caracteres brasileiros
+        String novoEstilo = estilo + 
+            "; -fx-font-encoding: 'UTF-8'" +
+            "; -fx-text-encoding: 'UTF-8'" +
+            "; -fx-font-smoothing-type: gray";
+        
+        controle.setStyle(novoEstilo);
+        
+        // Para TextArea e TextField, configurar propriedades adicionais
+        if (controle instanceof TextInputControl) {
+            TextInputControl textControl = (TextInputControl) controle;
+            
+            // Garantir que aceite caracteres especiais brasileiros
+            textControl.textProperty().addListener((obs, oldText, newText) -> {
+                // Não fazer nada especial, apenas garantir que o texto seja preservado
+                // O JavaFX deve lidar com UTF-8 automaticamente
+            });
+        }
+    }
+
     public Scene criarCena() {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(20));
@@ -76,6 +121,9 @@ public class TelaAnalisadorLexico {
         txtCaminhoEntrada.setPrefWidth(450);
         txtCaminhoEntrada.setPromptText("@arquivo.txt");
         
+        // Configurar input method para layout brasileiro
+        configurarInputMethodBrasileiro(txtCaminhoEntrada);
+        
         Button btnSelecionarEntrada = new Button("Selecionar Arquivo");
         btnSelecionarEntrada.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 5;");
         
@@ -86,6 +134,9 @@ public class TelaAnalisadorLexico {
         TextField txtCaminhoSaida = new TextField();
         txtCaminhoSaida.setPrefWidth(450);
         txtCaminhoSaida.setPromptText("tokens_saida.txt");
+        
+        // Configurar input method para layout brasileiro
+        configurarInputMethodBrasileiro(txtCaminhoSaida);
         
         Button btnSelecionarSaida = new Button("Selecionar Local");
         btnSelecionarSaida.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 5;");
@@ -107,6 +158,9 @@ public class TelaAnalisadorLexico {
         txtConteudo.setPromptText("O conteúdo do arquivo selecionado aparecerá aqui...");
         txtConteudo.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
         
+        // Configurar input method para layout brasileiro
+        configurarInputMethodBrasileiro(txtConteudo);
+        
         // Botão de análise
         Button btnAnalisar = new Button("ANALISAR");
         btnAnalisar.setPrefWidth(150);
@@ -125,6 +179,9 @@ public class TelaAnalisadorLexico {
         txtResultados.setPromptText("Os tokens analisados aparecerão aqui...");
         txtResultados.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px; -fx-background-color: #ecf0f1;");
         
+        // Configurar input method para layout brasileiro (mesmo sendo read-only, pode ser útil)
+        configurarInputMethodBrasileiro(txtResultados);
+
         centerBox.getChildren().addAll(
             fileGrid,
             new Separator(),

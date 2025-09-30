@@ -78,6 +78,7 @@ public class AnalisadorLexico {
         SIMBOLOS_SIMPLES.put(';', new Token(TipoToken.SIMBOLO_ESPECIAL, ";"));
         SIMBOLOS_SIMPLES.put(',', new Token(TipoToken.SIMBOLO_ESPECIAL, ","));
         SIMBOLOS_SIMPLES.put('.', new Token(TipoToken.SIMBOLO_ESPECIAL, "."));
+        SIMBOLOS_SIMPLES.put(':', new Token(TipoToken.SIMBOLO_ESPECIAL, ":"));
         SIMBOLOS_SIMPLES.put('+', new Token(TipoToken.OPERADOR_ARITMETICO, "+"));
         SIMBOLOS_SIMPLES.put('-', new Token(TipoToken.OPERADOR_ARITMETICO, "-"));
         SIMBOLOS_SIMPLES.put('*', new Token(TipoToken.OPERADOR_ARITMETICO, "*"));
@@ -102,15 +103,8 @@ public class AnalisadorLexico {
     ignorarEspacosEmBranco();
 
     if (posicaoAtual >= codigoFonte.length()) {
-        if (exibirFimDeArquivo) {
-            Token token = new Token(TipoToken.FIM_DE_ARQUIVO, "\0");
-            tokenAnterior = token;
-            return token;
-        } else {
-            // Se não deve exibir FIM_DE_ARQUIVO, retorna null ou continua o loop
-            // Para manter compatibilidade, vamos retornar FIM_DE_ARQUIVO mas sem exibir
-            return null; // Indica fim sem token
-        }
+        // Não retorna mais token FIM_DE_ARQUIVO, apenas null para indicar fim
+        return null;
     }
 
     char caractereAtual = codigoFonte.charAt(posicaoAtual);
@@ -267,6 +261,18 @@ public class AnalisadorLexico {
             tokenAnterior = token16;
             return token16;
 
+        case '\'':
+            // Reconhece caracteres delimitados por aspas simples
+            Token tokenChar = reconhecerChar();
+            tokenAnterior = tokenChar;
+            return tokenChar;
+
+        case '"':
+            // Reconhece strings delimitadas por aspas duplas
+            Token tokenString = reconhecerString();
+            tokenAnterior = tokenString;
+            return tokenString;
+
         default:
             // Adiciona o caractere não identificado à lista
             caracteresNaoIdentificados.add(caractereAtual);
@@ -310,14 +316,19 @@ public class AnalisadorLexico {
 
         // Verifica se há uma parte fracionária (tornando o número real)
         if (posicaoAtual < codigoFonte.length() && codigoFonte.charAt(posicaoAtual) == '.') {
-            ehReal = true;
-            posicaoAtual++; // Consome o '.'
+            // Verifica se há pelo menos um dígito após o ponto
+            if (posicaoAtual + 1 < codigoFonte.length() && 
+                Character.isDigit(codigoFonte.charAt(posicaoAtual + 1))) {
+                ehReal = true;
+                posicaoAtual++; // Consome o '.'
 
-            // Consome a parte fracionária
-            while (posicaoAtual < codigoFonte.length() && 
-                   Character.isDigit(codigoFonte.charAt(posicaoAtual))) {
-                posicaoAtual++;
+                // Consome a parte fracionária
+                while (posicaoAtual < codigoFonte.length() && 
+                       Character.isDigit(codigoFonte.charAt(posicaoAtual))) {
+                    posicaoAtual++;
+                }
             }
+            // Se não há dígito após o ponto, não consome o ponto (será tratado como símbolo separado)
         }
         
         // Verifica a notação científica (ex: 1.23e-04), que também o torna real
@@ -393,6 +404,58 @@ public class AnalisadorLexico {
     // Método para obter os caracteres não identificados
     public List<Character> getCaracteresNaoIdentificados() {
         return new ArrayList<>(caracteresNaoIdentificados);
+    }
+    
+    // Método para reconhecer caracteres delimitados por aspas simples
+    private Token reconhecerChar() {
+        int posicaoInicial = posicaoAtual;
+        posicaoAtual++; // Consome a aspa simples inicial
+        
+        // Verifica se há pelo menos um caractere e uma aspa de fechamento
+        if (posicaoAtual >= codigoFonte.length()) {
+            System.err.println("Erro: Caractere não fechado");
+            return new Token(TipoToken.CHAR_LITERAL, codigoFonte.substring(posicaoInicial));
+        }
+        
+        // Consome o caractere (pode ser qualquer caractere, incluindo espaços)
+        char caractere = codigoFonte.charAt(posicaoAtual);
+        posicaoAtual++;
+        
+        // Verifica se há a aspa de fechamento
+        if (posicaoAtual >= codigoFonte.length() || codigoFonte.charAt(posicaoAtual) != '\'') {
+            System.err.println("Erro: Caractere não fechado");
+            return new Token(TipoToken.CHAR_LITERAL, codigoFonte.substring(posicaoInicial, posicaoAtual));
+        }
+        
+        posicaoAtual++; // Consome a aspa simples final
+        
+        // Retorna apenas o conteúdo do caractere, sem as aspas
+        return new Token(TipoToken.CHAR_LITERAL, String.valueOf(caractere));
+    }
+    
+    // Método para reconhecer strings delimitadas por aspas duplas
+    private Token reconhecerString() {
+        int posicaoInicial = posicaoAtual;
+        posicaoAtual++; // Consome a aspa dupla inicial
+        
+        StringBuilder conteudoString = new StringBuilder();
+        
+        // Consome caracteres até encontrar a aspa dupla de fechamento
+        while (posicaoAtual < codigoFonte.length() && codigoFonte.charAt(posicaoAtual) != '"') {
+            conteudoString.append(codigoFonte.charAt(posicaoAtual));
+            posicaoAtual++;
+        }
+        
+        // Verifica se encontrou a aspa de fechamento
+        if (posicaoAtual >= codigoFonte.length()) {
+            System.err.println("Erro: String não fechada");
+            return new Token(TipoToken.STRING_LITERAL, conteudoString.toString());
+        }
+        
+        posicaoAtual++; // Consome a aspa dupla final
+        
+        // Retorna apenas o conteúdo da string, sem as aspas
+        return new Token(TipoToken.STRING_LITERAL, conteudoString.toString());
     }
     
     // Método para limpar a lista de caracteres não identificados

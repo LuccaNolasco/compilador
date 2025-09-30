@@ -1,15 +1,5 @@
 program teste;
-/* inicio do programa */
-var x,y: integer;
-const pi := 3.1416;
+x:= 20
 
-begin
-read(x);
-if (x &gt; y) then
-y := x ;
-else
-
-y := -x;
-writeln(x);
-write(y);
+y := x - 5
 end.
