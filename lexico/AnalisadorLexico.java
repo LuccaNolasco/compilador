@@ -5,25 +5,48 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Analisador Léxico para linguagem Pascal
+ * 
+ * Esta classe implementa a primeira fase de um compilador: a análise léxica.
+ * Sua função é transformar uma sequência de caracteres (código fonte) em
+ * uma sequência de tokens (unidades léxicas significativas).
+ * 
+ * Funcionalidades principais:
+ * - Reconhecimento de palavras reservadas
+ * - Identificação de identificadores
+ * - Processamento de números (inteiros e reais)
+ * - Reconhecimento de operadores e símbolos especiais
+ * - Tratamento de comentários
+ * - Processamento de literais (caracteres e strings)
+ * - Detecção de caracteres não reconhecidos
+ * 
+ */
 public class AnalisadorLexico {
 
-  private String codigoFonte;
-  private int posicaoAtual;
-  private Token tokenAnterior; // Para rastrear o token anterior
-  
-  // Controle para exibir ou não o token FIM_DE_ARQUIVO
-  private boolean exibirFimDeArquivo = false; // Desativado por padrão
-  
-  // Lista para armazenar caracteres não identificados
-  private List<Character> caracteresNaoIdentificados = new ArrayList<>();
+    // === ATRIBUTOS DE CONTROLE ===
+    private String codigoFonte;                 // Código fonte a ser analisado
+    private int posicaoAtual;                   // Posição atual no código fonte
+    private Token tokenAnterior;                // Token anterior (para contexto)
+    
+    // Controle para exibir ou não o token FIM_DE_ARQUIVO
+    private boolean exibirFimDeArquivo = false; // Desativado por padrão
+    
+    // Lista para armazenar caracteres não identificados
+    private List<Character> caracteresNaoIdentificados = new ArrayList<>();
 
+    // === TABELAS DE RECONHECIMENTO ===
+    
+    // Mapa das palavras reservadas da linguagem Pascal
     private static final Map<String, TipoToken> PALAVRAS_RESERVADAS = new HashMap<>();
 
+    // Mapa dos símbolos simples (um caractere)
     private static final Map<Character, Token> SIMBOLOS_SIMPLES = new HashMap<>();
 
 
-   static {
-
+    // === INICIALIZAÇÃO ESTÁTICA DAS TABELAS ===
+    static {
+        // Inicializar mapa de palavras reservadas
         PALAVRAS_RESERVADAS.put("absolute", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("array", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("begin", TipoToken.PALAVRA_RESERVADA);
@@ -73,6 +96,7 @@ public class AnalisadorLexico {
         PALAVRAS_RESERVADAS.put("with", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("xor", TipoToken.PALAVRA_RESERVADA);
 
+        // Inicializar mapa de símbolos simples
         SIMBOLOS_SIMPLES.put('(', new Token(TipoToken.SIMBOLO_ESPECIAL, "("));
         SIMBOLOS_SIMPLES.put(')', new Token(TipoToken.SIMBOLO_ESPECIAL, ")"));
         SIMBOLOS_SIMPLES.put(';', new Token(TipoToken.SIMBOLO_ESPECIAL, ";"));
@@ -84,46 +108,71 @@ public class AnalisadorLexico {
         SIMBOLOS_SIMPLES.put('*', new Token(TipoToken.OPERADOR_ARITMETICO, "*"));
         SIMBOLOS_SIMPLES.put('/', new Token(TipoToken.OPERADOR_ARITMETICO, "/"));
     }
+    
+    // === CONSTRUTOR ===
+    
+    /**
+     * Construtor do analisador léxico
+     */
     public AnalisadorLexico(String codigoFonte) {
         this.codigoFonte = codigoFonte;
         this.posicaoAtual = 0;
-        this.tokenAnterior = null; // Inicializa como null
+        this.tokenAnterior = null; // Inicializa sem token anterior
     }
 
-
-
-  private void ignorarEspacosEmBranco() {
+    // === MÉTODOS PRINCIPAIS ===
+    
+    /**
+     * Ignora espaços em branco, tabs e quebras de linha
+     * 
+     * Avança a posição atual até encontrar um caractere não-branco
+     */
+    private void ignorarEspacosEmBranco() {
         while (posicaoAtual < codigoFonte.length() && Character.isWhitespace(codigoFonte.charAt(posicaoAtual))) {
             posicaoAtual++;
         }
     }
 
-     // MÉTODO proximoToken ATUALIZADO
-   public Token proximoToken() {
-    ignorarEspacosEmBranco();
+    /**
+     * Método principal para obter o próximo token do código fonte
+     * 
+     * Este é o método mais importante do analisador léxico. Ele:
+     * 1. Ignora espaços em branco
+     * 2. Verifica se chegou ao fim do código
+     * 3. Identifica o tipo de token baseado no primeiro caractere
+     * 4. Chama o método apropriado para processar cada tipo
+     * 5. Atualiza o token anterior para contexto
+     * 
+     */
+    public Token proximoToken() {
+        // Pular espaços em branco
+        ignorarEspacosEmBranco();
 
-    if (posicaoAtual >= codigoFonte.length()) {
-        // Não retorna mais token FIM_DE_ARQUIVO, apenas null para indicar fim
-        return null;
-    }
+        // Verificar se chegou ao fim do código fonte
+        if (posicaoAtual >= codigoFonte.length()) {
+            return null; // Fim da análise
+        }
 
-    char caractereAtual = codigoFonte.charAt(posicaoAtual);
+        char caractereAtual = codigoFonte.charAt(posicaoAtual);
 
-    // Primeiro, trata os tokens que podem ter múltiplos caracteres
-    if (Character.isLetter(caractereAtual)) {
-        Token token = reconhecerIdentificador();
-        tokenAnterior = token;
-        return token;
-    }
+        // === RECONHECIMENTO POR TIPO DE CARACTERE ===
+        
+        // Identificadores e palavras reservadas (começam com letra)
+        if (Character.isLetter(caractereAtual)) {
+            Token token = reconhecerIdentificador();
+            tokenAnterior = token;
+            return token;
+        }
 
-    if (Character.isDigit(caractereAtual)) {
-        Token token = reconhecerNumero();
-        tokenAnterior = token;
-        return token;
-    }
+        // Números (começam com dígito)
+        if (Character.isDigit(caractereAtual)) {
+            Token token = reconhecerNumero();
+            tokenAnterior = token;
+            return token;
+        }
 
-    // Agora, trata os símbolos. Note que o avanço da posição (posicaoAtual++)
-    // agora é feito DENTRO de cada case.
+        // === SÍMBOLOS E OPERADORES ===
+        // Cada case avança a posição e retorna o token apropriado
     switch (caractereAtual) {
         case '(':
             posicaoAtual++;
@@ -146,13 +195,14 @@ public class AnalisadorLexico {
             tokenAnterior = token4;
             return token4;
         case '.':
-            // Verifica se o token anterior é 'end' (PALAVRA_RESERVADA)
+            // REGRA ESPECIAL: Se o token anterior é 'end', então '.' é fim de programa
             if (tokenAnterior != null && tokenAnterior.tipo == TipoToken.PALAVRA_RESERVADA && tokenAnterior.lexema.equals("end")) {
                 posicaoAtual++;
                 Token tokenFim = new Token(TipoToken.FIM, ".");
                 tokenAnterior = tokenFim;
                 return tokenFim;
             } else {
+                // Caso contrário, é apenas um ponto normal
                 posicaoAtual++;
                 Token token5 = new Token(TipoToken.SIMBOLO_ESPECIAL, ".");
                 tokenAnterior = token5;
@@ -164,26 +214,26 @@ public class AnalisadorLexico {
             tokenAnterior = token6;
             return token6;
         case '-':
-            // Regra: Se "-" for precedido de um número ou identificador, é operador aritmético
+            // REGRA COMPLEXA: O '-' pode ser operador ou parte de número negativo
             if (tokenAnterior != null && 
                 (tokenAnterior.tipo == TipoToken.NUMERO_INTEIRO || 
                  tokenAnterior.tipo == TipoToken.NUMERO_REAL ||
                  tokenAnterior.tipo == TipoToken.IDENTIFICADOR)) {
-                // Precedido de número ou identificador -> operador aritmético
+                // Precedido de número ou identificador -> é operador de subtração
                 posicaoAtual++;
                 Token token = new Token(TipoToken.OPERADOR_ARITMETICO, "-");
                 tokenAnterior = token;
                 return token;
             } else {
-                // Não precedido de número ou identificador -> verifica se o próximo é dígito
+                // Não precedido de número/identificador -> verificar se próximo é dígito
                 if (posicaoAtual + 1 < codigoFonte.length() && 
                     Character.isDigit(codigoFonte.charAt(posicaoAtual + 1))) {
-                    // Próximo é dígito -> número negativo
+                    // Próximo é dígito -> é número negativo
                     Token numeroNegativo = reconhecerNumero();
                     tokenAnterior = numeroNegativo;
                     return numeroNegativo;
                 } else {
-                    // Próximo não é dígito -> operador aritmético
+                    // Próximo não é dígito -> é operador de subtração
                     posicaoAtual++;
                     Token token = new Token(TipoToken.OPERADOR_ARITMETICO, "-");
                     tokenAnterior = token;
@@ -196,15 +246,15 @@ public class AnalisadorLexico {
             tokenAnterior = token7;
             return token7;
         case '/':
-            // Verifica se é início de comentário /*
+            // REGRA ESPECIAL: Verificar se é comentário /* ou operador de divisão
             if (posicaoAtual + 1 < codigoFonte.length() && 
                 codigoFonte.charAt(posicaoAtual + 1) == '*') {
-                // É um comentário, ignora tudo até encontrar */
+                // É início de comentário /* ... */
                 ignorarComentario();
-                // Após ignorar o comentário, continua analisando o próximo token
+                // Após ignorar o comentário, continuar análise
                 return proximoToken();
             } else {
-                // É apenas um operador de divisão
+                // É apenas operador de divisão
                 posicaoAtual++;
                 Token token8 = new Token(TipoToken.OPERADOR_ARITMETICO, "/");
                 tokenAnterior = token8;
@@ -212,168 +262,206 @@ public class AnalisadorLexico {
             }
         
         case ':':
+            // Verificar se é atribuição ':=' ou apenas dois pontos ':'
             if (peek() == '=') {
-                posicaoAtual += 2; // Avança 2 posições para consumir ':='
+                posicaoAtual += 2; // Consumir ':='
                 Token token9 = new Token(TipoToken.ATRIBUICAO, ":=");
                 tokenAnterior = token9;
                 return token9;
             } else {
-                posicaoAtual++; // Avança 1 posição para consumir ':'
+                posicaoAtual++; // Consumir apenas ':'
                 Token token10 = new Token(TipoToken.SIMBOLO_ESPECIAL, ":");
                 tokenAnterior = token10;
                 return token10;
             }
 
         case '<':
+            // Operadores relacionais: '<', '<=', '<>'
             if (peek() == '=') {
-                posicaoAtual += 2;
+                posicaoAtual += 2; // Consumir '<='
                 Token token11 = new Token(TipoToken.OPERADOR_RELACIONAL, "<=");
                 tokenAnterior = token11;
                 return token11;
             } else if (peek() == '>') {
-                posicaoAtual += 2;
+                posicaoAtual += 2; // Consumir '<>' (diferente)
                 Token token12 = new Token(TipoToken.OPERADOR_RELACIONAL, "<>");
                 tokenAnterior = token12;
                 return token12;
             } else {
-                posicaoAtual++;
+                posicaoAtual++; // Consumir '<' (menor que)
                 Token token13 = new Token(TipoToken.OPERADOR_RELACIONAL, "<");
                 tokenAnterior = token13;
                 return token13;
             }
         
         case '>':
+            // Operadores relacionais: '>', '>='
             if (peek() == '=') {
-                posicaoAtual += 2;
+                posicaoAtual += 2; // Consumir '>='
                 Token token14 = new Token(TipoToken.OPERADOR_RELACIONAL, ">=");
                 tokenAnterior = token14;
                 return token14;
             } else {
-                posicaoAtual++;
+                posicaoAtual++; // Consumir '>' (maior que)
                 Token token15 = new Token(TipoToken.OPERADOR_RELACIONAL, ">");
                 tokenAnterior = token15;
                 return token15;
             }
 
         case '=':
+            // Operador de igualdade
             posicaoAtual++;
             Token token16 = new Token(TipoToken.OPERADOR_RELACIONAL, "=");
             tokenAnterior = token16;
             return token16;
 
         case '\'':
-            // Reconhece caracteres delimitados por aspas simples
+            // Literais de caractere (aspas simples)
             Token tokenChar = reconhecerChar();
             tokenAnterior = tokenChar;
             return tokenChar;
 
         case '"':
-            // Reconhece strings delimitadas por aspas duplas
+            // Literais de string (aspas duplas)
             Token tokenString = reconhecerString();
             tokenAnterior = tokenString;
             return tokenString;
 
         default:
-            // Adiciona o caractere não identificado à lista
+            // Caractere não reconhecido - adicionar à lista de erros
             caracteresNaoIdentificados.add(caractereAtual);
             System.err.println("Caractere desconhecido: " + caractereAtual);
-            posicaoAtual++;
-            return proximoToken();
+            posicaoAtual++; // Pular o caractere problemático
+            return proximoToken(); // Continuar análise
     }
 }
 
-       private Token reconhecerIdentificador() {
+    // === MÉTODOS DE RECONHECIMENTO ESPECÍFICOS ===
+    
+    /**
+     * Reconhece identificadores e palavras reservadas
+     * 
+     * Um identificador começa com letra e pode conter letras e dígitos.
+     * Após extrair o lexema, verifica se é palavra reservada.
+     * 
+     */
+    private Token reconhecerIdentificador() {
         int posicaoInicial = posicaoAtual;
-        // Avança enquanto for letra ou dígito
+        
+        // Consumir todos os caracteres alfanuméricos
         while (posicaoAtual < codigoFonte.length() && 
                Character.isLetterOrDigit(codigoFonte.charAt(posicaoAtual))) {
             posicaoAtual++;
         }
         
-        // Extrai o lexema do código fonte
+        // Extrair o lexema completo
         String lexema = codigoFonte.substring(posicaoInicial, posicaoAtual);
         
-        // Verifica se é uma palavra reservada ou um identificador comum
+        // Verificar se é palavra reservada (case-insensitive)
         TipoToken tipo = PALAVRAS_RESERVADAS.getOrDefault(lexema.toLowerCase(), TipoToken.IDENTIFICADOR);
         
         return new Token(tipo, lexema);
     }
 
-     private Token reconhecerNumero() {
+    /**
+     * Reconhece números inteiros e reais
+     * 
+     * Suporta:
+     * - Números inteiros: 123, -456
+     * - Números reais: 12.34, -5.67
+     * - Notação científica: 1.23e-4, 2E+5
+     * - Números negativos quando apropriado
+     * 
+     */
+    private Token reconhecerNumero() {
         int posicaoInicial = posicaoAtual;
         boolean ehReal = false;
 
-        // Verifica se há um sinal negativo no início
+        // Consumir sinal negativo se presente
         if (posicaoAtual < codigoFonte.length() && codigoFonte.charAt(posicaoAtual) == '-') {
-            posicaoAtual++; // Consome o sinal negativo
+            posicaoAtual++; // Consumir o '-'
         }
 
-        // Consome a parte inteira do número
+        // Consumir parte inteira (dígitos obrigatórios)
         while (posicaoAtual < codigoFonte.length() && 
                Character.isDigit(codigoFonte.charAt(posicaoAtual))) {
             posicaoAtual++;
         }
 
-        // Verifica se há uma parte fracionária (tornando o número real)
+        // Verificar parte fracionária (ponto decimal)
         if (posicaoAtual < codigoFonte.length() && codigoFonte.charAt(posicaoAtual) == '.') {
-            // Verifica se há pelo menos um dígito após o ponto
+            // Só consumir o ponto se houver dígito após ele
             if (posicaoAtual + 1 < codigoFonte.length() && 
                 Character.isDigit(codigoFonte.charAt(posicaoAtual + 1))) {
                 ehReal = true;
-                posicaoAtual++; // Consome o '.'
+                posicaoAtual++; // Consumir o '.'
 
-                // Consome a parte fracionária
+                // Consumir dígitos da parte fracionária
                 while (posicaoAtual < codigoFonte.length() && 
                        Character.isDigit(codigoFonte.charAt(posicaoAtual))) {
                     posicaoAtual++;
                 }
             }
-            // Se não há dígito após o ponto, não consome o ponto (será tratado como símbolo separado)
+            // Se não há dígito após '.', deixar o ponto para próximo token
         }
         
-        // Verifica a notação científica (ex: 1.23e-04), que também o torna real
+        // Verificar notação científica (e/E)
         if (posicaoAtual < codigoFonte.length() && 
             (codigoFonte.charAt(posicaoAtual) == 'e' || codigoFonte.charAt(posicaoAtual) == 'E')) {
             ehReal = true;
-            posicaoAtual++; // Consome o 'e' ou 'E'
+            posicaoAtual++; // Consumir 'e' ou 'E'
 
-            // Verifica se há um sinal de '+' ou '-' no expoente
+            // Consumir sinal do expoente (opcional)
             if (posicaoAtual < codigoFonte.length() && 
                 (codigoFonte.charAt(posicaoAtual) == '+' || codigoFonte.charAt(posicaoAtual) == '-')) {
-                posicaoAtual++; // Consome o sinal
+                posicaoAtual++; // Consumir sinal
             }
 
-            // Consome os dígitos do expoente
+            // Consumir dígitos do expoente
             while (posicaoAtual < codigoFonte.length() && 
                    Character.isDigit(codigoFonte.charAt(posicaoAtual))) {
                 posicaoAtual++;
             }
         }
 
+        // Extrair lexema e determinar tipo
         String lexema = codigoFonte.substring(posicaoInicial, posicaoAtual);
         TipoToken tipo = ehReal ? TipoToken.NUMERO_REAL : TipoToken.NUMERO_INTEIRO;
 
         return new Token(tipo, lexema);
     }
 
-      private char peek() {
+    // === MÉTODOS UTILITÁRIOS ===
+    
+    /**
+     * Espia o próximo caractere sem consumi-lo
+     */
+    private char peek() {
         if (posicaoAtual + 1 >= codigoFonte.length()) {
-            return '\0'; // Retorna nulo se estivermos no fim
+            return '\0'; // Caractere nulo indica fim
         }
         return codigoFonte.charAt(posicaoAtual + 1);
     }
 
-    // Método para ativar/desativar a exibição do token FIM_DE_ARQUIVO
+    /**
+     * Configura se deve exibir token FIM_DE_ARQUIVO
+     */
     public void setExibirFimDeArquivo(boolean exibir) {
         this.exibirFimDeArquivo = exibir;
     }
     
-    // Método para verificar se está exibindo FIM_DE_ARQUIVO
+    /**
+     * Verifica se está configurado para exibir FIM_DE_ARQUIVO
+     */
     public boolean isExibindoFimDeArquivo() {
         return this.exibirFimDeArquivo;
     }
 
-    // Método para verificar se o token anterior é um número ou identificador
+    /**
+     * Verifica se o token anterior é um número ou identificador
+     * 
+     * Usado para determinar contexto em casos ambíguos (como o operador '-')
+     */
     private boolean tokenAnteriorEhNumeroOuIdentificador() {
         return tokenAnterior != null && 
                (tokenAnterior.tipo == TipoToken.NUMERO_INTEIRO || 
@@ -381,84 +469,107 @@ public class AnalisadorLexico {
                 tokenAnterior.tipo == TipoToken.IDENTIFICADOR);
     }
     
-    // Método para ignorar comentários /* */
+    /**
+     * Ignora comentarios
+     * 
+     * Avanca a posicao ate encontrar o fechamento do comentario.
+     * Se o comentario nao for fechado, ignora ate o fim do codigo.
+     */
     private void ignorarComentario() {
-        // Avança além do /*
+        // Pular o "/*" inicial
         posicaoAtual += 2;
         
-        // Procura pelo fim do comentário */
+        // Procurar pelo fechamento "*/"
         while (posicaoAtual + 1 < codigoFonte.length()) {
             if (codigoFonte.charAt(posicaoAtual) == '*' && 
                 codigoFonte.charAt(posicaoAtual + 1) == '/') {
-                // Encontrou o fim do comentário, avança além do */
+                // Encontrou fechamento - pular o "*/"
                 posicaoAtual += 2;
                 return;
             }
             posicaoAtual++;
         }
         
-        // Se chegou aqui, o comentário não foi fechado (erro, mas vamos ignorar até o fim)
+        // Comentario nao foi fechado - ir ate o fim (erro tolerado)
         posicaoAtual = codigoFonte.length();
     }
     
-    // Método para obter os caracteres não identificados
+    /**
+     * Retorna lista dos caracteres nao identificados durante a analise
+     */
     public List<Character> getCaracteresNaoIdentificados() {
         return new ArrayList<>(caracteresNaoIdentificados);
     }
     
-    // Método para reconhecer caracteres delimitados por aspas simples
+    /**
+     * Reconhece literais de caractere delimitados por aspas simples
+     * 
+     * Formato: 'c' onde c é qualquer caractere
+     * Retorna apenas o caractere, sem as aspas.
+     * 
+     * @return Token do tipo CHAR_LITERAL
+     */
     private Token reconhecerChar() {
         int posicaoInicial = posicaoAtual;
-        posicaoAtual++; // Consome a aspa simples inicial
+        posicaoAtual++; // Consumir aspa simples inicial '
         
-        // Verifica se há pelo menos um caractere e uma aspa de fechamento
+        // Verificar se há caractere suficiente
         if (posicaoAtual >= codigoFonte.length()) {
             System.err.println("Erro: Caractere não fechado");
             return new Token(TipoToken.CHAR_LITERAL, codigoFonte.substring(posicaoInicial));
         }
         
-        // Consome o caractere (pode ser qualquer caractere, incluindo espaços)
+        // Consumir o caractere (qualquer um, incluindo espaços)
         char caractere = codigoFonte.charAt(posicaoAtual);
         posicaoAtual++;
         
-        // Verifica se há a aspa de fechamento
+        // Verificar aspa de fechamento
         if (posicaoAtual >= codigoFonte.length() || codigoFonte.charAt(posicaoAtual) != '\'') {
             System.err.println("Erro: Caractere não fechado");
             return new Token(TipoToken.CHAR_LITERAL, codigoFonte.substring(posicaoInicial, posicaoAtual));
         }
         
-        posicaoAtual++; // Consome a aspa simples final
+        posicaoAtual++; // Consumir aspa simples final '
         
-        // Retorna apenas o conteúdo do caractere, sem as aspas
+        // Retornar apenas o conteudo, sem as aspas
         return new Token(TipoToken.CHAR_LITERAL, String.valueOf(caractere));
     }
     
-    // Método para reconhecer strings delimitadas por aspas duplas
+    /**
+     * Reconhece literais de string delimitados por aspas duplas
+     * 
+     * Formato: "texto" onde texto pode conter qualquer caractere
+     * Retorna apenas o conteúdo, sem as aspas.
+     * 
+     */
     private Token reconhecerString() {
         int posicaoInicial = posicaoAtual;
-        posicaoAtual++; // Consome a aspa dupla inicial
+        posicaoAtual++; // Consumir aspa dupla inicial "
         
         StringBuilder conteudoString = new StringBuilder();
         
-        // Consome caracteres até encontrar a aspa dupla de fechamento
+        // Consumir todos os caracteres até a aspa de fechamento
         while (posicaoAtual < codigoFonte.length() && codigoFonte.charAt(posicaoAtual) != '"') {
             conteudoString.append(codigoFonte.charAt(posicaoAtual));
             posicaoAtual++;
         }
         
-        // Verifica se encontrou a aspa de fechamento
+        // Verificar se encontrou aspa de fechamento
         if (posicaoAtual >= codigoFonte.length()) {
             System.err.println("Erro: String não fechada");
             return new Token(TipoToken.STRING_LITERAL, conteudoString.toString());
         }
         
-        posicaoAtual++; // Consome a aspa dupla final
+        posicaoAtual++; // Consumir aspa dupla final "
         
-        // Retorna apenas o conteúdo da string, sem as aspas
+        // Retornar apenas o conteudo, sem as aspas
         return new Token(TipoToken.STRING_LITERAL, conteudoString.toString());
     }
     
-    // Método para limpar a lista de caracteres não identificados
+    /**
+     * Limpa a lista de caracteres nao identificados
+     * Util para reiniciar a analise ou limpar erros anteriores.
+     */
     public void limparCaracteresNaoIdentificados() {
         caracteresNaoIdentificados.clear();
     }
