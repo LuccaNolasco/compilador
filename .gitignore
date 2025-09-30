@@ -1,2 +1,4 @@
 testes/
 *.class
+out/
+compilador.jar
