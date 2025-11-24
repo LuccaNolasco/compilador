@@ -1,0 +1,19 @@
+program programa_completo;
+var a, b, c : integer;
+var resultado : Boolean;
+begin
+    a := 10;
+    b := 20;
+    c := a + b;
+    if c > 25 then
+        resultado := true
+    else
+        resultado := false;
+    while c < 100 do
+    begin
+        c := c + 10;
+        write(c);
+    end;
+    writeln;
+end.
+

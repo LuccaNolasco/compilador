@@ -1,0 +1,12 @@
+program exemplo;
+var x, y : integer;
+begin
+    if x < 10 then
+        while y > 0 do
+            begin
+                y := y - 1;
+                if y = 5 then
+                    x := x + 1;
+            end;
+end.
+

@@ -1,0 +1,6 @@
+program exemplo;
+begin
+    writeln;
+    x := 10;
+end.
+

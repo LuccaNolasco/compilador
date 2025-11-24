@@ -1,0 +1,9 @@
+program leitura_escrita;
+var nome : integer;
+begin
+    readln(nome);
+    writeln(nome);
+    readln;
+    writeln;
+end.
+

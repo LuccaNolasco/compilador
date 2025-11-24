@@ -1,0 +1,5 @@
+program exemplo;
+begin
+    write "teste";
+end.
+

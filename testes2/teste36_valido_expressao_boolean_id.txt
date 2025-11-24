@@ -1,0 +1,9 @@
+program exemplo;
+var x, y : boolean;
+begin
+    if x then
+        y := true;
+    if y then
+        x := false;
+end.
+

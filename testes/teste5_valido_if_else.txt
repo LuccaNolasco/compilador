@@ -1,0 +1,11 @@
+program condicional_completo;
+var x, y : integer;
+begin
+    x := 10;
+    y := 20;
+    if x < y then
+        x := y
+    else
+        y := x;
+end.
+

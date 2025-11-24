@@ -1,0 +1,12 @@
+program exemplo;
+var x, y : integer;
+begin
+    begin
+        x := 10;
+        begin
+            y := 20;
+            x := x + y;
+        end;
+    end;
+end.
+

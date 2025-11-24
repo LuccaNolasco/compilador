@@ -1,0 +1,15 @@
+program exemplo;
+var x, y : integer;
+begin
+    if x < y then
+        begin
+            x := 10;
+            y := 20;
+        end
+    else
+        begin
+            x := 30;
+            y := 40;
+        end;
+end.
+

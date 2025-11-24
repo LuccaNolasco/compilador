@@ -1,0 +1,8 @@
+program exemplo;
+var x, y : integer;
+var a, b, c : boolean;
+begin
+    x := 10;
+    y := 20;
+end.
+

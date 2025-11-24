@@ -1,0 +1,6 @@
+program exemplo;
+begin
+    writeln("Hello", "World");
+    writeln("Teste");
+end.
+

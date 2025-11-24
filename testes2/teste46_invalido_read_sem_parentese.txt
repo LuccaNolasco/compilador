@@ -1,0 +1,6 @@
+program exemplo;
+var x : integer;
+begin
+    read x;
+end.
+

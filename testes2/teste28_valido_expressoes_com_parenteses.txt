@@ -1,0 +1,8 @@
+program exemplo;
+var x, y, z : integer;
+begin
+    x := (10 + 20) * 3;
+    y := (x - 5) / 2;
+    z := ((x + y) * 2) - 10;
+end.
+

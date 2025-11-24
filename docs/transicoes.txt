@@ -1,0 +1,408 @@
+I0 → { S' → # S , S → # program id ; D begin L end ., S → # program id ; begin L end . }
+- transição (I0, S) = { S' → S # } = I1
+- transição (I0, program) = { S → program # id ; D begin L end ., S → program # id ; begin L end . } = I2
+- transição (I2, id) = { S → program id # ; D begin L end ., S → program id # ; begin L end . } = I3
+- transição (I3, ;) = { D → # var V, S → program id ; # D begin L end ., S → program id ; # begin L end . } = I4
+- transição (I4, begin) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, L → # C
+;, L → # C ; L, M → # begin L end, N → # if B then C, N → # if B then C else C, P → # while B do C, R → #
+read ( I ), R → # readln, R → # readln ( I ), S → program id ; begin # L end ., W → # write ( F ), W → #
+writeln, W → # writeln ( F ) } = I6
+- transição (I4, var) = { D → var # V, I → # id, I → # id , I, V → # I : T ;, V → # I : T ; V } = I7
+- transição (I5, begin) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, L → # C
+;, L → # C ; L, M → # begin L end, N → # if B then C, N → # if B then C else C, P → # while B do C, R → #
+read ( I ), R → # readln, R → # readln ( I ), S → program id ; D begin # L end ., W → # write ( F ), W → #
+writeln, W → # writeln ( F ) } = I8
+- transição (I6, begin) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, L → # C
+;, L → # C ; L, M → # begin L end, M → begin # L end, N → # if B then C, N → # if B then C else C, P → #
+while B do C, R → # read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → #
+writeln ( F ) } = I17
+- transição (I6, id) = { A → id # := E } = I18
+- transição (I6, if) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E >= E,
+B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → # num,
+N → if # B then C, N → if # B then C else C } = I19
+- transição (I6, read) = { R → read # ( I ) } = I20
+- transição (I6, readln) = { R → readln #, R → readln # ( I ) } = I21
+- transição (I6, while) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E >=
+E, B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → #
+num, P → while # B do C } = I22
+- transição (I6, write) = { W → write # ( F ) } = I23
+- transição (I6, writeln) = { W → writeln #, W → writeln # ( F ) } = I24
+- transição (I7, id) = { I → id #, I → id # , I } = I27
+- transição (I8, begin) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, L → # C
+;, L → # C ; L, M → # begin L end, M → begin # L end, N → # if B then C, N → # if B then C else C, P → #
+while B do C, R → # read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → #
+writeln ( F ) } = I17
+- transição (I8, id) = { A → id # := E } = I18
+- transição (I8, if) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E >= E,
+B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → # num,
+N → if # B then C, N → if # B then C else C } = I19
+- transição (I8, read) = { R → read # ( I ) } = I20
+- transição (I8, readln) = { R → readln #, R → readln # ( I ) } = I21
+- transição (I8, while) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E >=
+E, B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → #
+num, P → while # B do C } = I22
+- transição (I8, write) = { W → write # ( F ) } = I23
+- transição (I8, writeln) = { W → writeln #, W → writeln # ( F ) } = I24
+- transição (I10, ;) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, L → # C ;,
+L → C ; #, L → # C ; L, L → C ; # L, M → # begin L end, N → # if B then C, N → # if B then C else C, P → #
+while B do C, R → # read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → #
+writeln ( F ) } = I29
+- transição (I11, end) = { S → program id ; begin L end # . } = I30
+- transição (I17, begin) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, L → #
+C ;, L → # C ; L, M → # begin L end, M → begin # L end, N → # if B then C, N → # if B then C else C, P → #
+while B do C, R → # read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → #
+writeln ( F ) } = I17
+- transição (I17, id) = { A → id # := E } = I18
+- transição (I17, if) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E >= E,
+B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → # num,
+N → if # B then C, N → if # B then C else C } = I19
+- transição (I17, read) = { R → read # ( I ) } = I20
+- transição (I17, readln) = { R → readln #, R → readln # ( I ) } = I21
+- transição (I17, while) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E
+>= E, B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → #
+num, P → while # B do C } = I22
+- transição (I17, write) = { W → write # ( F ) } = I23
+- transição (I17, writeln) = { W → writeln #, W → writeln # ( F ) } = I24
+- transição (I18, :=) = { A → id := # E, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → #
+E / E, E → # id, E → # num } = I32
+- transição (I19, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I19, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I19, id) = { B → id #, E → id # } = I37
+- transição (I19, num) = { E → num # } = I38
+- transição (I20, () = { I → # id, I → # id , I, R → read ( # I ) } = I39
+- transição (I21, () = { I → # id, I → # id , I, R → readln ( # I ) } = I40
+- transição (I22, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I22, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I22, id) = { B → id #, E → id # } = I37
+- transição (I22, num) = { E → num # } = I38
+- transição (I23, () = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id,
+E → # num, F → # G, F → # G , F, G → # E, G → # str, W → write ( # F ) } = I42
+- transição (I24, () = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id,
+E → # num, F → # G, F → # G , F, G → # E, G → # str, W → writeln ( # F ) } = I43
+- transição (I25, :) = { T → # Boolean, T → # integer, V → I : # T ;, V → I : # T ; V } = I44
+- transição (I27, ,) = { I → # id, I → # id , I, I → id , # I } = I45
+- transição (I28, end) = { S → program id ; D begin L end # . } = I46
+- transição (I29, begin) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, L → #
+C ;, L → # C ; L, M → # begin L end, M → begin # L end, N → # if B then C, N → # if B then C else C, P → #
+while B do C, R → # read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → #
+writeln ( F ) } = I17
+- transição (I29, id) = { A → id # := E } = I18
+- transição (I29, if) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E >= E,
+B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → # num,
+N → if # B then C, N → if # B then C else C } = I19
+- transição (I29, read) = { R → read # ( I ) } = I20
+- transição (I29, readln) = { R → readln #, R → readln # ( I ) } = I21
+- transição (I29, while) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E
+>= E, B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → #
+num, P → while # B do C } = I22
+- transição (I29, write) = { W → write # ( F ) } = I23
+- transição (I29, writeln) = { W → writeln #, W → writeln # ( F ) } = I24
+- transição (I30, .) = { S → program id ; begin L end . # } = I48
+- transição (I31, end) = { M → begin L end # } = I49
+- transição (I32, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I32, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I32, id) = { E → id # } = I51
+- transição (I32, num) = { E → num # } = I38
+- transição (I33, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I33, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I33, id) = { E → id # } = I51
+- transição (I33, num) = { E → num # } = I38
+- transição (I34, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I34, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I34, id) = { E → id # } = I51
+- transição (I34, num) = { E → num # } = I38
+- transição (I35, then) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, M → #
+begin L end, N → # if B then C, N → if B then # C, N → # if B then C else C, N → if B then # C else C, P → #
+while B do C, R → # read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → #
+writeln ( F ) } = I54
+- transição (I36, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I36, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I36, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I36, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I36, <) = { B → E < # E, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I59
+- transição (I36, <=) = { B → E <= # E, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → #
+E / E, E → # id, E → # num } = I60
+- transição (I36, <>) = { B → E <> # E, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → #
+E / E, E → # id, E → # num } = I61
+- transição (I36, =) = { B → E = # E, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I62
+- transição (I36, >) = { B → E > # E, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I63
+- transição (I36, >=) = { B → E >= # E, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → #
+E / E, E → # id, E → # num } = I64
+- transição (I39, id) = { I → id #, I → id # , I } = I27
+- transição (I40, id) = { I → id #, I → id # , I } = I27
+- transição (I41, do) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, M → #
+begin L end, N → # if B then C, N → # if B then C else C, P → # while B do C, P → while B do # C, R → #
+read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → # writeln ( F ) } = I67
+- transição (I42, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I42, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I42, id) = { E → id # } = I51
+- transição (I42, num) = { E → num # } = I38
+- transição (I42, str) = { G → str # } = I71
+- transição (I43, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I43, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I43, id) = { E → id # } = I51
+- transição (I43, num) = { E → num # } = I38
+- transição (I43, str) = { G → str # } = I71
+- transição (I44, Boolean) = { T → Boolean # } = I73
+- transição (I44, integer) = { T → integer # } = I75
+- transição (I45, id) = { I → id #, I → id # , I } = I27
+- transição (I46, .) = { S → program id ; D begin L end . # } = I77
+- transição (I50, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I50, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I50, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I50, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I52, )) = { E → ( E ) # } = I78
+- transição (I52, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I52, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I52, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I52, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I53, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I53, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I53, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I53, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I54, begin) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, L → #
+C ;, L → # C ; L, M → # begin L end, M → begin # L end, N → # if B then C, N → # if B then C else C, P → #
+while B do C, R → # read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → #
+writeln ( F ) } = I17
+- transição (I54, id) = { A → id # := E } = I18
+- transição (I54, if) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E >= E,
+B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → # num,
+N → if # B then C, N → if # B then C else C } = I19
+- transição (I54, read) = { R → read # ( I ) } = I20
+- transição (I54, readln) = { R → readln #, R → readln # ( I ) } = I21
+- transição (I54, while) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E
+>= E, B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → #
+num, P → while # B do C } = I22
+- transição (I54, write) = { W → write # ( F ) } = I23
+- transição (I54, writeln) = { W → writeln #, W → writeln # ( F ) } = I24
+- transição (I55, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I55, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I55, id) = { E → id # } = I51
+- transição (I55, num) = { E → num # } = I38
+- transição (I56, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I56, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I56, id) = { E → id # } = I51
+- transição (I56, num) = { E → num # } = I38
+- transição (I57, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I57, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I57, id) = { E → id # } = I51
+- transição (I57, num) = { E → num # } = I38
+- transição (I58, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I58, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I58, id) = { E → id # } = I51
+- transição (I58, num) = { E → num # } = I38
+- transição (I59, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I59, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I59, id) = { E → id # } = I51
+- transição (I59, num) = { E → num # } = I38
+- transição (I60, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I60, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I60, id) = { E → id # } = I51
+- transição (I60, num) = { E → num # } = I38
+- transição (I61, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I61, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I61, id) = { E → id # } = I51
+- transição (I61, num) = { E → num # } = I38
+- transição (I62, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I62, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I62, id) = { E → id # } = I51
+- transição (I62, num) = { E → num # } = I38
+- transição (I63, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I63, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I63, id) = { E → id # } = I51
+- transição (I63, num) = { E → num # } = I38
+- transição (I64, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I64, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I64, id) = { E → id # } = I51
+- transição (I64, num) = { E → num # } = I38
+- transição (I65, )) = { R → read ( I ) # } = I90
+- transição (I66, )) = { R → readln ( I ) # } = I91
+- transição (I67, begin) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, L → #
+C ;, L → # C ; L, M → # begin L end, M → begin # L end, N → # if B then C, N → # if B then C else C, P → #
+while B do C, R → # read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → #
+writeln ( F ) } = I17
+- transição (I67, id) = { A → id # := E } = I18
+- transição (I67, if) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E >= E,
+B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → # num,
+N → if # B then C, N → if # B then C else C } = I19
+- transição (I67, read) = { R → read # ( I ) } = I20
+- transição (I67, readln) = { R → readln #, R → readln # ( I ) } = I21
+- transição (I67, while) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E
+>= E, B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → #
+num, P → while # B do C } = I22
+- transição (I67, write) = { W → write # ( F ) } = I23
+- transição (I67, writeln) = { W → writeln #, W → writeln # ( F ) } = I24
+- transição (I68, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I68, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I68, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I68, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I69, )) = { W → write ( F ) # } = I93
+- transição (I70, ,) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id,
+E → # num, F → # G, F → # G , F, F → G , # F, G → # E, G → # str } = I94
+- transição (I72, )) = { W → writeln ( F ) # } = I95
+- transição (I74, ;) = { I → # id, I → # id , I, V → # I : T ;, V → I : T ; #, V → # I : T ; V, V → I : T ; # V } =
+I96
+- transição (I79, else) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, M → #
+begin L end, N → # if B then C, N → # if B then C else C, N → if B then C else # C, P → # while B do C, R →
+# read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → # writeln ( F ) } = I97
+- transição (I80, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I80, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I80, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I80, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I81, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I81, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I81, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I81, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I82, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I82, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I82, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I82, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I83, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I83, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I83, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I83, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I84, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I84, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I84, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I84, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I85, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I85, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I85, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I85, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I86, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I86, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I86, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I86, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I87, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I87, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I87, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I87, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I88, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I88, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I88, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I88, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I89, *) = { E → # ( E ), E → # - E, E → # E * E, E → E * # E, E → # E + E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I55
+- transição (I89, +) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → E + # E, E → # E - E, E → # E
+/ E, E → # id, E → # num } = I56
+- transição (I89, -) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → E - # E, E → # E /
+E, E → # id, E → # num } = I57
+- transição (I89, /) = { E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → E / #
+E, E → # id, E → # num } = I58
+- transição (I94, () = { E → # ( E ), E → ( # E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E /
+E, E → # id, E → # num } = I33
+- transição (I94, -) = { E → # ( E ), E → # - E, E → - # E, E → # E * E, E → # E + E, E → # E - E, E → # E / E,
+E → # id, E → # num } = I34
+- transição (I94, id) = { E → id # } = I51
+- transição (I94, num) = { E → num # } = I38
+- transição (I94, str) = { G → str # } = I71
+- transição (I96, id) = { I → id #, I → id # , I } = I27
+- transição (I97, begin) = { A → # id := E, C → # A, C → # M, C → # N, C → # P, C → # R, C → # W, L → #
+C ;, L → # C ; L, M → # begin L end, M → begin # L end, N → # if B then C, N → # if B then C else C, P → #
+while B do C, R → # read ( I ), R → # readln, R → # readln ( I ), W → # write ( F ), W → # writeln, W → #
+writeln ( F ) } = I17
+- transição (I97, id) = { A → id # := E } = I18
+- transição (I97, if) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E >= E,
+B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → # num,
+N → if # B then C, N → if # B then C else C } = I19
+- transição (I97, read) = { R → read # ( I ) } = I20
+- transição (I97, readln) = { R → readln #, R → readln # ( I ) } = I21
+- transição (I97, while) = { B → # E < E, B → # E <= E, B → # E <> E, B → # E = E, B → # E > E, B → # E
+>= E, B → # id, E → # ( E ), E → # - E, E → # E * E, E → # E + E, E → # E - E, E → # E / E, E → # id, E → #
+num, P → while # B do C } = I22
+- transição (I97, write) = { W → write # ( F ) } = I23
+- transição (I97, writeln) = { W → writeln #, W → writeln # ( F ) } = I24
+

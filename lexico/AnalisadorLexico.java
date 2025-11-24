@@ -50,6 +50,7 @@ public class AnalisadorLexico {
         PALAVRAS_RESERVADAS.put("absolute", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("array", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("begin", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("boolean", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("case", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("char", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("const", TipoToken.PALAVRA_RESERVADA);
@@ -341,17 +342,21 @@ public class AnalisadorLexico {
     /**
      * Reconhece identificadores e palavras reservadas
      * 
-     * Um identificador começa com letra e pode conter letras e dígitos.
+     * Um identificador começa com letra e pode conter letras, dígitos e underscore (_).
      * Após extrair o lexema, verifica se é palavra reservada.
      * 
      */
     private Token reconhecerIdentificador() {
         int posicaoInicial = posicaoAtual;
         
-        // Consumir todos os caracteres alfanuméricos
-        while (posicaoAtual < codigoFonte.length() && 
-               Character.isLetterOrDigit(codigoFonte.charAt(posicaoAtual))) {
-            posicaoAtual++;
+        // Consumir todos os caracteres alfanuméricos e underscore
+        while (posicaoAtual < codigoFonte.length()) {
+            char c = codigoFonte.charAt(posicaoAtual);
+            if (Character.isLetterOrDigit(c) || c == '_') {
+                posicaoAtual++;
+            } else {
+                break;
+            }
         }
         
         // Extrair o lexema completo

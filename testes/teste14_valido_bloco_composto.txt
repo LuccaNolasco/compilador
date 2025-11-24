@@ -1,0 +1,16 @@
+program blocos;
+var x : integer;
+begin
+    x := 0;
+    while x < 10 do
+    begin
+        x := x + 1;
+        write(x);
+    end;
+    if x > 5 then
+    begin
+        x := x * 2;
+        writeln(x);
+    end;
+end.
+

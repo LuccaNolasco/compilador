@@ -1,0 +1,8 @@
+program exemplo;
+var x, y, z : integer;
+begin
+    x := 100 / 2;
+    y := (x + 10) / 3;
+    z := x / y / 2;
+end.
+

@@ -1,0 +1,8 @@
+program exemplo;
+var x, y : integer;
+begin
+    x := -10;
+    y := -x;
+    x := -y + 5;
+end.
+

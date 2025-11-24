@@ -23,10 +23,12 @@ public class CompiladorGUI extends Application {
     // Referências para as janelas da aplicação
     private Stage primaryStage;        // Janela principal
     private Stage lexicalStage;        // Janela do analisador léxico
+    private Stage sintaticoStage;     // Janela do analisador sintático
     
     // Instâncias das diferentes telas do compilador
     private TelaInicial telaInicial;                // Tela inicial com menu
     private TelaAnalisadorLexico telaAnalisadorLexico;  // Tela do analisador léxico
+    private TelaAnalisadorSintatico telaAnalisadorSintatico;  // Tela do analisador sintático
     
     /**
      * Método principal do JavaFX que inicializa a aplicação
@@ -44,6 +46,7 @@ public class CompiladorGUI extends Application {
         // Inicializar as diferentes telas do compilador
         telaInicial = new TelaInicial(primaryStage, this);
         telaAnalisadorLexico = new TelaAnalisadorLexico(primaryStage, this);
+        telaAnalisadorSintatico = new TelaAnalisadorSintatico(primaryStage, this);
         
         // Criar e exibir a tela principal (menu inicial)
         Scene mainScene = telaInicial.criarCena();
@@ -118,16 +121,51 @@ public class CompiladorGUI extends Application {
     }
     
     /**
+     * Abre a tela do analisador sintático
+     * 
+     * Este método é chamado quando o usuário clica no botão "Analisador Sintático"
+     * na tela inicial. Fecha a janela principal e abre uma nova janela específica
+     * para análise sintática.
+     */
+    public void abrirAnalisadorSintatico() {
+        // Criar a cena do analisador sintático
+        Scene sintaticoScene = telaAnalisadorSintatico.criarCena();
+        
+        // Fechar a janela principal (menu inicial)
+        primaryStage.close();
+        
+        // Criar e configurar nova janela para o analisador sintático
+        sintaticoStage = new Stage();
+        sintaticoStage.setTitle("Analisador Sintático");
+        sintaticoStage.setScene(sintaticoScene);
+        sintaticoStage.setResizable(false);  // Janela com tamanho fixo
+        
+        // Configurar comportamento ao fechar a janela
+        sintaticoStage.setOnCloseRequest(e -> {
+            // Quando fechar o analisador sintático, encerrar a aplicação
+            System.exit(0);
+        });
+        
+        // Exibir a janela do analisador sintático
+        sintaticoStage.show();
+    }
+    
+    /**
      * Retorna para a tela inicial (menu principal)
      * 
      * Este método é chamado quando o usuário clica no botão "Voltar"
-     * na tela do analisador léxico. Fecha a janela atual e reabre
+     * nas telas dos analisadores. Fecha a janela atual e reabre
      * a janela principal com o menu inicial.
      */
     public void voltarTelaInicial() {
         // Fechar a janela do analisador léxico se estiver aberta
         if (lexicalStage != null) {
             lexicalStage.close();
+        }
+        
+        // Fechar a janela do analisador sintático se estiver aberta
+        if (sintaticoStage != null) {
+            sintaticoStage.close();
         }
         
         // Recriar e exibir a tela principal (menu inicial)

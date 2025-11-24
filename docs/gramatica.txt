@@ -1,0 +1,143 @@
+                  Universidade Estadual do Sudoeste da Bahia – UESB
+                        Departamento de Ciências Exatas – DCET
+            Disciplina: Compiladores Professores: José Carlos Martins Oliveira
+                  Curso: Ciência da Computação Ano: 2025 Período: II
+
+                         TRABALHO PRÁTICO DA II UNIDADE
+        Implementação do Analisador Sintático para a linguagem Sigma- Valor 4,0
+
+Criar, em dupla, um analisador sintático que reconheça programas escritos, segundo a
+gramática abaixo. A dupla deverá utilizar a técnica SLR(1) para a implementação do analisador
+sintático para a linguagem especificada acima.
+Algumas recomendações para o trabalho:
+     Use o analisador léxico feito no primeiro trabalho (com as devidas correções)
+     Identifique os tokens existentes nesta gramática (símbolos terminais e definições
+        regulares), modificando o analisador léxico se necessário.
+     Comece implementando um analisador sintático simples para um subconjunto da
+        gramática (para reconhecer expressões válidas, por exemplo). Modifique a gramática
+        (se necessário), gere a tabela de símbolos e implemente o analisador léxico para este
+        subconjunto.
+Data de entrega/entrevista: Próxima aula após a avaliação da segunda unidade.
+
+Deverão ser entregues:
+ Documentação impressa do trabalho e no formato de artigo, com explicações a respeito da
+   instalação e utilização do mesmo. Este texto deverá conter:
+ Descrição do que foi feito e o do que não foi feito.
+ Descrição do que está funcionando e do que não está funcionando.
+ Comentários a respeito da linguagem, descrevendo suas limitações e incluindo eventuais
+   modificações na gramática projetada inicialmente.
+ Uma avaliação da dupla a respeito do trabalho.
+ Código fonte, ricamente comentado.
+ Arquivos da linguagem utilizada (preparados para serem executados diretamente, sem
+   necessidade de recompilação ou qualquer ambiente de desenvolvimento).
+ Conjunto de pelo menos 05 arquivos de teste, contendo programas na linguagem, que
+   permitam testar exaustivamente o analisador.
+
+Observações:
+ Os trabalhos serão avaliados de acordo com o texto explicativo. Os códigos fontes e
+  executáveis serão utilizados apenas para complemento da avaliação.
+ Discrepâncias entre o texto e o trabalho entregue serão consideradas como tentativa de
+  fraude.
+ Trabalhos que não possam ser executados terão nota zero.
+
+Critérios de avaliação:
+ Domínio dos apresentadores com relação ao conteúdo do trabalho.
+ Funcionamento: o programa deve estar isento de erros.
+ Organização do código: o código fonte deve estar estruturado de maneira adequada.
+ Documentação: o programa deve estar adequadamente documentado.
+ Interface: o programa deve ser fácil de ser usado e produzir mensagens de erro que
+   esclareçam o usuário.
+ESPECIFICAÇÃO DA GRAMÁTICA DA LINGUAGEM:
+Para implementar uma gramática que reconheça essas especificações, deverão ser utilizadas
+duas ferramentas: EBNF(Extended Bakus Naur Form) e Notação Formal, esta última usando
+GLC (Gramática Livre de Contexto).
+1. Elementos Básicos e especificações de EBNF
+    Conjunto de símbolos terminais: São os símbolos que formam a linguagem. Ex.:
+       begin, while, etc.;
+    Conjunto de símbolos não - terminais: são os símbolos que não pertencem à
+       linguagem, são usados para representar definições intermediárias usadas nas produções
+       da gramática. São cercados por ‘<’ e ‘>’;
+    Conjunto de produções: é a definição de um símbolo não-terminal.
+
+                                         Forma Geral
+                                           X ::= Y
+onde
+X – símbolo não-terminal
+Y – sequência de símbolos
+     Símbolos alvo (ou inicial): não terminal especial
+Obs.:
+1. Todo símbolo não-terminal deve aparecer na esquerda de alguma produção.
+2. O símbolo alvo não pode aparecer na esquerda de alguma produção.
+     Pode se representar ainda:
+                o Alternativa: |
+                o Opcional: [ ]
+                o Repetição: { }
+Obedecendo essas regras, nossa gramática implementada em EBNF teria 14 não-terminais e
+pode ser vista na tabela abaixo.
+<programa>::= program id; [<declarações>] begin <lista comandos> end.
+<declarações>::= var id {,id} : <tipo>; {id {,id} : <tipo>;}
+<tipo>::= integer | boolean
+<lista comandos>::= <comando> ; {<comando>;}
+<comando>::= <atribuição>| <leitura>|<escrita>|<composto>|<condicional>|<repetição>
+<atribuição>::= id := <expr>
+<leitura>::= read (id {,id}) | readln [(id {,id})]
+<escrita>::= write (<stringvar> {,<stringvar>}) | writeln [(<stringvar> {,(<stringvar>})]
+<composto>::= begin <lista comandos> end
+<condicional>::= if <exprboolean> then <comando> [else <commando>]
+<repetição>::= while <exprboolean> do <comando>
+<expr>::= <expr> + <expr> | <expr> - <expr>| <expr>*<expr>| <expr>/<expr>| -<expr>|
+(<expr>)| id | num
+<exprboolean>::= <expr> < <expr> | <expr> <= <expr> | <expr> > <expr> | <expr> >=
+<expr> | <expr> = <expr>| <expr> <> <expr> | id
+<stringvar>::= str | <expr>
+
+2. Elementos básicos e especificações de notação formal
+Uma gramática G é definida pela quádrupla G = <N, T, P, S>, onde:
+N = conjunto finito de não-terminais
+T = conjunto finito de não-terminais
+P = conjunto finito de regra de produção
+S = símbolo inicial.
+2.1 Especificações de GLC
+Para G sendo a quádrupla G <N, T, P, S> e V+ sendo N unido com T exceto o vazio tem-se:
+P = {a -> b | a pertence a N e b pertence a V+}
+Obedecendo estas especificações, construímos uma gramática em notação formal, que pode ser
+vista na tabela abaixo. Foram utilizados 17 não-terminais.
+
+S -> program id; D begin L end. | program id; begin L end.
+D -> var V
+V -> I: T; V | I : T;
+T -> integer | Boolean
+I -> id | id,I
+L -> C; | C;L
+C -> A | R | W | M | N | P
+A -> id := E
+R -> read (I) | readln | readln (I)
+W -> write (F) | writeln | writeln (F)
+F -> G | G,F
+G -> str | E
+M -> begin L end
+N -> if B then C | if B then C else C
+P -> while B do C
+E -> E + E | E – E | E * E | E / E | - E | (E) | id | num
+B -> E < E | E <= E | E > E | E >= E | E = E | E <> E | id
+
+Com relação à EBNF anteriormente mostrada, podemos fazer a seguinte ligação EBNF <>
+GLC:
+S = <programa>
+W = <escrita>
+D = <declarações>
+F = lista de <stringvar>
+V = lista de variáveis na declaração
+G = <stringvar>
+T = <tipo>
+M = <composto>
+I = lista de ids
+N = <condicional>
+L = <lista commandos>
+P= <repetição>
+C = <comando>
+E = <expr>
+A = <atribuição>
+B = <exprboolean>
+R = <leitura>
+

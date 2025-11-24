@@ -73,10 +73,10 @@ public class TelaInicial {
         configurarBotao(btnLexico, "#27ae60", true);  // Verde para indicar disponível
         btnLexico.setOnAction(e -> mainApp.abrirAnalisadorLexico());
         
-        // Botão Analisador Sintático (não implementado - cor cinza)
-        Button btnSintatico = new Button("✖ Analisador Sintático");
-        configurarBotao(btnSintatico, "#95a5a6", false);  // Cinza para indicar bloqueado
-        btnSintatico.setOnAction(e -> mostrarAviso("Analisador Sintático ainda não implementado"));
+        // Botão Analisador Sintático (funcional - cor verde)
+        Button btnSintatico = new Button("✓ Analisador Sintático");
+        configurarBotao(btnSintatico, "#27ae60", true);  // Verde para indicar disponível
+        btnSintatico.setOnAction(e -> mainApp.abrirAnalisadorSintatico());
         
         // Botão Analisador Semântico (não implementado - cor cinza)
         Button btnSemantico = new Button("✖ Analisador Semântico");

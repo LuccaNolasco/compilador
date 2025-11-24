@@ -1,0 +1,7 @@
+program exemplo;
+var x, y, z : integer;
+begin
+    readln(x, y, z);
+    x := x + y;
+end.
+
