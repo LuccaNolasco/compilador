@@ -1,0 +1,5 @@
+program id;
+begin
+    id := 123;
+end.
+

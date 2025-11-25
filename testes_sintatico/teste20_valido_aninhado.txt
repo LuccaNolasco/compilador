@@ -1,0 +1,16 @@
+program id;
+var id, id : integer;
+begin
+    id := num;
+    id := num;
+    if id < id then
+    begin
+        while id < num do
+        begin
+            id := id + num;
+            if id = num then
+                id := id - num;
+        end;
+    end;
+end.
+

@@ -1,0 +1,12 @@
+program id;
+var id, id : integer;
+var id, id : Boolean;
+var id : integer;
+begin
+    id := num;
+    id := num;
+    id := id;
+    id := id;
+    id := id + id;
+end.
+

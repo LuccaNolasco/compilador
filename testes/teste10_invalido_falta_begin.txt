@@ -1,5 +1,0 @@
-program exemplo;
-var x : integer;
-    x := 10;
-end.
-

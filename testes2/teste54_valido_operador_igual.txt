@@ -1,9 +1,0 @@
-program exemplo;
-var x, y : integer;
-begin
-    if x = y then
-        x := 10;
-    if x = 0 then
-        y := 20;
-end.
-

@@ -1,0 +1,19 @@
+program id;
+var id, id, id : integer;
+var id : Boolean;
+begin
+    id := num;
+    id := num;
+    id := id + id;
+    if id > num then
+        id := id
+    else
+        id := id;
+    while id < num do
+    begin
+        id := id + num;
+        write(id);
+    end;
+    writeln;
+end.
+

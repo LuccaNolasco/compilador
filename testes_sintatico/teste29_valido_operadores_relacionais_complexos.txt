@@ -1,0 +1,17 @@
+program id;
+var id, id, id : integer;
+begin
+    if id < id then
+        id := num;
+    if id <= id then
+        id := num;
+    if id > id then
+        id := num;
+    if id >= id then
+        id := num;
+    if id = id then
+        id := num;
+    if id <> id then
+        id := num;
+end.
+

@@ -1,7 +1,0 @@
-program exemplo;
-var x, y : integer;
-begin
-    write("Valor de x: ", x, " e y: ", y);
-    writeln("Fim");
-end.
-

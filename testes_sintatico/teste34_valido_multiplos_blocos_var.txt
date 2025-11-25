@@ -1,0 +1,8 @@
+program id;
+var id, id : integer;
+var id, id, id : boolean;
+begin
+    id := num;
+    id := num;
+end.
+

@@ -1,0 +1,6 @@
+program x;
+begin
+    x := 123;
+    y := "hello";
+end.
+

@@ -1,0 +1,9 @@
+program id;
+var id, id : integer;
+begin
+    if id = id then
+        id := num;
+    if id = num then
+        id := num;
+end.
+

@@ -1,0 +1,8 @@
+program id;
+var id : integer;
+begin
+    id := num;
+    write(str, id);
+    writeln(str);
+end.
+

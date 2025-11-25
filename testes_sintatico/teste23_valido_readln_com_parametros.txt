@@ -1,0 +1,7 @@
+program id;
+var id, id, id : integer;
+begin
+    readln(id, id, id);
+    id := id + id;
+end.
+

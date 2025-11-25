@@ -1,0 +1,7 @@
+program id;
+var id : integer;
+begin
+    if id < num
+        id := num;
+end.
+

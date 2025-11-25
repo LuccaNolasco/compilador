@@ -1,0 +1,6 @@
+program id;
+begin
+    readln;
+    id := num;
+end.
+

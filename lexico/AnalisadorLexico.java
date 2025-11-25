@@ -79,6 +79,8 @@ public class AnalisadorLexico {
         PALAVRAS_RESERVADAS.put("packed", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("proc", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("program", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("read", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("readln", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("real", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("record", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("repeat", TipoToken.PALAVRA_RESERVADA);
@@ -95,6 +97,8 @@ public class AnalisadorLexico {
         PALAVRAS_RESERVADAS.put("var", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("while", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("with", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("write", TipoToken.PALAVRA_RESERVADA);
+        PALAVRAS_RESERVADAS.put("writeln", TipoToken.PALAVRA_RESERVADA);
         PALAVRAS_RESERVADAS.put("xor", TipoToken.PALAVRA_RESERVADA);
 
         // Inicializar mapa de símbolos simples
@@ -161,15 +165,15 @@ public class AnalisadorLexico {
         // Identificadores e palavras reservadas (começam com letra)
         if (Character.isLetter(caractereAtual)) {
             Token token = reconhecerIdentificador();
+            // O tratamento de "num" já é feito dentro de reconhecerIdentificador()
             tokenAnterior = token;
             return token;
         }
 
         // Números (começam com dígito)
+        // REGRA ESPECIAL: Não aceita números reais, apenas a palavra "num" conforme a gramática
         if (Character.isDigit(caractereAtual)) {
-            Token token = reconhecerNumero();
-            tokenAnterior = token;
-            return token;
+            throw new RuntimeException("Erro léxico: Números literais não são permitidos. Use apenas 'num' conforme a gramática.");
         }
 
         // === SÍMBOLOS E OPERADORES ===
@@ -345,6 +349,9 @@ public class AnalisadorLexico {
      * Um identificador começa com letra e pode conter letras, dígitos e underscore (_).
      * Após extrair o lexema, verifica se é palavra reservada.
      * 
+     * REGRA ESPECIAL: Apenas aceita "id" como identificador válido (conforme gramática).
+     * Qualquer outro identificador será rejeitado.
+     * 
      */
     private Token reconhecerIdentificador() {
         int posicaoInicial = posicaoAtual;
@@ -361,15 +368,33 @@ public class AnalisadorLexico {
         
         // Extrair o lexema completo
         String lexema = codigoFonte.substring(posicaoInicial, posicaoAtual);
+        String lexemaLower = lexema.toLowerCase();
         
         // Verificar se é palavra reservada (case-insensitive)
-        TipoToken tipo = PALAVRAS_RESERVADAS.getOrDefault(lexema.toLowerCase(), TipoToken.IDENTIFICADOR);
+        TipoToken tipo = PALAVRAS_RESERVADAS.getOrDefault(lexemaLower, TipoToken.IDENTIFICADOR);
+        
+        // REGRA ESPECIAL: Aceita apenas "id", "num" e "str" como identificadores válidos (conforme gramática)
+        if (tipo == TipoToken.IDENTIFICADOR) {
+            if (lexemaLower.equals("num")) {
+                // "num" é tratado como número genérico (símbolo terminal da gramática)
+                return new Token(TipoToken.NUMERO_INTEIRO, "num");
+            } else if (lexemaLower.equals("str")) {
+                // "str" é tratado como string genérica (símbolo terminal da gramática)
+                return new Token(TipoToken.STRING_LITERAL, "str");
+            } else if (!lexemaLower.equals("id")) {
+                // Qualquer outro identificador é rejeitado
+                throw new RuntimeException("Erro léxico: Identificador '" + lexema + "' não permitido. Use apenas 'id', 'num' ou 'str' conforme a gramática.");
+            }
+        }
         
         return new Token(tipo, lexema);
     }
 
     /**
      * Reconhece números inteiros e reais
+     * 
+     * NOTA: Este método não deve ser chamado diretamente quando seguindo estritamente a gramática,
+     * pois apenas "num" é aceito como símbolo terminal. Números literais são rejeitados.
      * 
      * Suporta:
      * - Números inteiros: 123, -456

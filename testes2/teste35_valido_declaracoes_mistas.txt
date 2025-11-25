@@ -1,8 +1,0 @@
-program exemplo;
-var x : integer;
-var y, z : boolean;
-var a, b, c : integer;
-begin
-    x := 10;
-end.
-

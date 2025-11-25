@@ -1,0 +1,6 @@
+program id;
+var id : integer;
+begin
+    read id;
+end.
+

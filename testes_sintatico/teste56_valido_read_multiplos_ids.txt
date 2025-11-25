@@ -1,0 +1,7 @@
+program id;
+var id, id, id, id : integer;
+begin
+    read(id, id, id, id);
+    id := id + id + id + id;
+end.
+

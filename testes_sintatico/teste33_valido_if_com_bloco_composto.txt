@@ -1,0 +1,15 @@
+program id;
+var id, id : integer;
+begin
+    if id < id then
+        begin
+            id := num;
+            id := num;
+        end
+    else
+        begin
+            id := num;
+            id := num;
+        end;
+end.
+

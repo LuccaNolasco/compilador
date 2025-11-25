@@ -1,8 +1,0 @@
-program entrada_saida;
-var x, y : integer;
-begin
-    read(x, y);
-    write(x, y);
-    writeln;
-end.
-

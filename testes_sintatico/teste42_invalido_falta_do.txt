@@ -1,0 +1,7 @@
+program id;
+var id : integer;
+begin
+    while id < num
+        id := id + num;
+end.
+

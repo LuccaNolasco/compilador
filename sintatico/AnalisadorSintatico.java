@@ -28,6 +28,7 @@ public class AnalisadorSintatico {
     private boolean aceito;                      // Flag indicando se programa foi aceito
     private String codigoFonte;                  // Código fonte original para calcular linha
     private int ultimaPosicaoProcessada;        // Última posição no código fonte que foi processada
+    private StringBuilder logPassoAPasso;       // Log do passo a passo da análise sintática
     
     // === TABELA DE AÇÕES E GOTOS ===
     // Ações: "sN" = shift para estado N, "rN" = reduce pela produção N, "acc" = aceitar, "" = erro
@@ -51,6 +52,7 @@ public class AnalisadorSintatico {
         this.linhaAtual = 1;
         this.ultimaPosicaoProcessada = 0;
         this.aceito = false;
+        this.logPassoAPasso = new StringBuilder();
         
         // Inicializar tabelas e produções
         inicializarProducoes();
@@ -652,8 +654,8 @@ public class AnalisadorSintatico {
         adicionarReduce("13", 13, new String[]{";"});
         
         // Reduces para C (produção 14: C -> W)
-        // FOLLOW(C) = {;}
-        adicionarReduce("14", 14, new String[]{";"});
+        // FOLLOW(C) = {;, else}
+        adicionarReduce("14", 14, new String[]{";", "else"});
         
         // Reduces para C (produção 15: C -> M)
         // FOLLOW(C) = {;}
@@ -690,16 +692,17 @@ public class AnalisadorSintatico {
         adicionarReduce("91", 21, new String[]{";"});
         
         // Reduces para W (produção 22: W -> write ( F ))
-        // FOLLOW(W) = {;}
-        adicionarReduce("93", 22, new String[]{";"});
+        // FOLLOW(W) = {;, else}
+        adicionarReduce("93", 22, new String[]{";", "else"});
+        adicionarReduce("14", 22, new String[]{";", "else"});  // Estado 14 também reduz W -> write ( F )
         
         // Reduces para W (produção 23: W -> writeln)
         // FOLLOW(W) = {;}
         adicionarReduce("24", 23, new String[]{";"});
         
         // Reduces para W (produção 24: W -> writeln ( F ))
-        // FOLLOW(W) = {;}
-        adicionarReduce("95", 24, new String[]{";"});
+        // FOLLOW(W) = {;, else}
+        adicionarReduce("95", 24, new String[]{";", "else"});
         
         // Reduces para F (produção 25: F -> G)
         // FOLLOW(F) = {),,}
@@ -715,9 +718,10 @@ public class AnalisadorSintatico {
         
         // Reduces para G (produção 28: G -> E)
         // FOLLOW(G) = {),,}
-        // Estados 36, 50, 52, 53, 68, 78 podem reduzir G -> E
+        // Estados 34, 36, 50, 52, 53, 68, 78 podem reduzir G -> E
         // Estados 80, 81, 82, 83 são estados intermediários de expressões (E -> E op E)
         // e não devem reduzir G -> E, apenas E -> E op E
+        adicionarReduce("34", 28, new String[]{")", ","});
         adicionarReduce("36", 28, new String[]{")", ","});
         adicionarReduce("50", 28, new String[]{")", ","});
         adicionarReduce("52", 28, new String[]{")", ","});
@@ -942,6 +946,8 @@ public class AnalisadorSintatico {
         // Estado 32
         tabelaGotos.put("32,E", 50);
         tabelaGotos.put("32,A", 12);  // Quando reduzimos E completo no estado 50, chegamos ao estado 32 e precisamos fazer GOTO para A
+        tabelaGotos.put("32,C", 10);  // Quando reduzimos C -> A no estado 32
+        tabelaGotos.put("32,L", 29);  // Quando reduzimos L -> C ; no estado 32
         
         // Estado 50: A -> id := E # - precisa fazer GOTO para E quando reduzimos E -> E * E ou E -> - E
         tabelaGotos.put("50,E", 50);  // Quando reduzimos E -> E * E ou E -> - E e chegamos ao estado 50, fazer GOTO para E
@@ -951,6 +957,12 @@ public class AnalisadorSintatico {
         
         // Estado 34
         tabelaGotos.put("34,E", 53);
+        tabelaGotos.put("34,G", 70);  // Quando reduzimos G -> E no estado 34 (expressão negativa)
+        tabelaGotos.put("34,F", 72);  // Quando reduzimos F -> G no estado 34 (expressão negativa em write/writeln)
+        tabelaGotos.put("34,W", 14);  // Quando reduzimos W -> write ( F ) no estado 34 (expressão negativa em write)
+        tabelaGotos.put("34,C", 10);  // Quando reduzimos C -> A no estado 34 (atribuição com expressão negativa)
+        tabelaGotos.put("34,A", 12);  // Quando reduzimos A -> id := E no estado 34 (atribuição com expressão negativa)
+        tabelaGotos.put("34,L", 29);  // Quando reduzimos L -> C ; no estado 34 (lista de comandos com expressão negativa)
         
         // Estado 35
         tabelaGotos.put("35,C", 54);
@@ -996,6 +1008,12 @@ public class AnalisadorSintatico {
         // Estado 45
         tabelaGotos.put("45,I", 27);
         
+        // Estado 53
+        tabelaGotos.put("53,E", 53);  // Quando reduzimos E -> - E no estado 53
+        tabelaGotos.put("53,C", 10);  // Quando reduzimos C -> A no estado 53
+        tabelaGotos.put("53,A", 12);  // Quando reduzimos A -> id := E no estado 53
+        tabelaGotos.put("53,L", 29);  // Quando reduzimos L -> C ; no estado 53
+        
         // Estado 54
         tabelaGotos.put("54,C", 79);
         tabelaGotos.put("54,A", 12);
@@ -1011,6 +1029,9 @@ public class AnalisadorSintatico {
         
         // Estado 56
         tabelaGotos.put("56,E", 81);
+        tabelaGotos.put("56,W", 14);  // Quando reduzimos W -> write ( F ) no estado 56
+        tabelaGotos.put("56,C", 10);  // Quando reduzimos C -> W no estado 56
+        tabelaGotos.put("56,A", 12);  // Quando reduzimos A -> id := E no estado 56
         
         // Estado 57
         tabelaGotos.put("57,E", 82);
@@ -1101,6 +1122,11 @@ public class AnalisadorSintatico {
     
     /**
      * Converte um TipoToken para string para uso na tabela
+     * 
+     * IMPORTANTE: Apenas aceita símbolos terminais da gramática:
+     * - "id" como identificador
+     * - "num" como número
+     * - "str" como string literal
      */
     private String tokenParaString(Token token) {
         if (token == null) return "$";
@@ -1109,11 +1135,23 @@ public class AnalisadorSintatico {
             case PALAVRA_RESERVADA:
                 return token.lexema.toLowerCase();
             case IDENTIFICADOR:
+                // Validar que apenas "id" é aceito
+                if (!token.lexema.toLowerCase().equals("id")) {
+                    throw new RuntimeException("Erro sintático: Identificador '" + token.lexema + "' não permitido. Use apenas 'id' conforme a gramática.");
+                }
                 return "id";
             case NUMERO_INTEIRO:
             case NUMERO_REAL:
+                // Validar que apenas "num" é aceito (já tratado no léxico, mas validação extra aqui)
+                if (!token.lexema.toLowerCase().equals("num")) {
+                    throw new RuntimeException("Erro sintático: Número '" + token.lexema + "' não permitido. Use apenas 'num' conforme a gramática.");
+                }
                 return "num";
             case STRING_LITERAL:
+                // Validar que apenas "str" (a palavra literal) é aceito, não strings literais com aspas
+                if (!token.lexema.equals("str")) {
+                    throw new RuntimeException("Erro sintático: String literal '" + token.lexema + "' não permitida. Use apenas 'str' conforme a gramática.");
+                }
                 return "str";
             case OPERADOR_ARITMETICO:
                 return token.lexema;
@@ -1137,12 +1175,26 @@ public class AnalisadorSintatico {
      */
     public boolean analisar() {
         try {
+            // Limpar log anterior
+            logPassoAPasso.setLength(0);
+            logPassoAPasso.append("═══════════════════════════════════════════════════════\n");
+            logPassoAPasso.append("  ANÁLISE SINTÁTICA - CONSULTA TABELA SLR(1)\n");
+            logPassoAPasso.append("═══════════════════════════════════════════════════════\n\n");
+            
             // Inicializar pilha com estado inicial
             pilhaEstados.push(0);
+            adicionarAoLog("═══════════════════════════════════════════════════════");
+            adicionarAoLog("  INICIALIZAÇÃO");
+            adicionarAoLog("═══════════════════════════════════════════════════════");
+            adicionarAoLog("Pilha inicial: [0]");
+            adicionarAoLog("Estado inicial: 0");
             
             // Obter primeiro token
             tokenAtual = analisadorLexico.proximoToken();
             atualizarLinha();
+            if (tokenAtual != null) {
+                adicionarAoLog(String.format("Primeiro token: '%s' (%s)", tokenAtual.lexema, tokenParaString(tokenAtual)));
+            }
             
             // Contador para prevenir loop infinito
             int iteracoes = 0;
@@ -1161,15 +1213,24 @@ public class AnalisadorSintatico {
                 
                 // Verificar se chegou ao fim (token null = fim de arquivo)
                 if (tokenAtual == null) {
+                    adicionarAoLog(String.format("\n═══════════════════════════════════════════════════════"));
+                    adicionarAoLog(String.format("  FIM DO ARQUIVO ALCANÇADO"));
+                    adicionarAoLog(String.format("═══════════════════════════════════════════════════════"));
+                    adicionarAoLog(String.format("Estado atual: %d", estadoAtual));
+                    adicionarAoLog(String.format("Pilha final: %s", pilhaEstados.toString()));
                     // Tentar aceitar se estiver em estado de aceitação
                     // Estados 48 e 77 são estados de aceitação
                     // Estado 11 também é estado de aceitação quando chegamos ao fim do arquivo após processar "end."
                     if (estadoAtual == 48 || estadoAtual == 77 || estadoAtual == 11) {
+                        adicionarAoLog(String.format("Estado %d é estado de ACEITAÇÃO!", estadoAtual));
+                        adicionarAoLog(String.format("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"));
                         aceito = true;
                         return true;
                     }
                     // Caso contrário, erro - atualizar linha baseada na última posição processada
                     // Mas primeiro, tentar usar a linha atual se ela foi atualizada corretamente
+                    adicionarAoLog(String.format("ERRO: Estado %d NÃO é estado de aceitação!", estadoAtual));
+                    adicionarAoLog(String.format("   Estados de aceitação: 11, 48, 77\n"));
                     atualizarLinhaFimArquivo();
                     return false;
                 }
@@ -1467,10 +1528,12 @@ public class AnalisadorSintatico {
                 if (acao == null) {
                     // Erro: ação não encontrada para estado/token
                     System.out.println("DEBUG: ERRO - Ação não encontrada para " + chave);
-                    System.out.println("DEBUG: Tokens disponíveis neste estado:");
+                    adicionarAoLog(String.format("  ERRO: AÇÃO[%d, %s] não encontrada!", estadoAtual, tokenStr));
+                    adicionarAoLog(String.format("  Ações disponíveis para estado %d:", estadoAtual));
                     for (String key : tabelaAcoes.keySet()) {
                         if (key.startsWith(estadoAtual + ",")) {
                             System.out.println("  " + key + " -> " + tabelaAcoes.get(key));
+                            adicionarAoLog(String.format("    - %s -> %s", key, tabelaAcoes.get(key)));
                         }
                     }
                     atualizarLinha();
@@ -1478,18 +1541,39 @@ public class AnalisadorSintatico {
                 }
                 
                 System.out.println("DEBUG: Ação encontrada: " + acao);
+                // Formatar ação para exibição mais clara
+                String acaoFormatada = acao;
+                if (acao.startsWith("s")) {
+                    int estadoShift = Integer.parseInt(acao.substring(1));
+                    acaoFormatada = "SHIFT - " + estadoShift;
+                } else if (acao.startsWith("r")) {
+                    int numProducao = Integer.parseInt(acao.substring(1));
+                    acaoFormatada = "REDUCE - " + numProducao;
+                } else if (acao.equals("acc")) {
+                    acaoFormatada = "ACEITAR";
+                }
+                adicionarAoLog(String.format("AÇÃO[%d, %s] = %s", estadoAtual, tokenStr, acaoFormatada));
                 
                 if (acao.equals("acc")) {
                     // Aceitar
+                    adicionarAoLog("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                    adicionarAoLog("ACEITAÇÃO: Programa sintaticamente correto!");
+                    adicionarAoLog("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
                     aceito = true;
                     return true;
                 } else if (acao.startsWith("s")) {
                     // Shift: empilhar estado e avançar token
                     int novoEstado = Integer.parseInt(acao.substring(1));
                     System.out.println("DEBUG: SHIFT para estado " + novoEstado);
+                    adicionarAoLog(String.format(""));
+                    adicionarAoLog(String.format("  === SHIFT - %d ===", novoEstado));
+                    adicionarAoLog(String.format("  Empilhar estado %d", novoEstado));
+                    adicionarAoLog(String.format("  Pilha ANTES: %s", pilhaEstados.toString()));
                     pilhaEstados.push(novoEstado);
+                    adicionarAoLog(String.format("  Pilha DEPOIS: %s", pilhaEstados.toString()));
                     // Só avançar token se não já o obtivemos na correção especial
                     if (!tokenJaObtido) {
+                        System.out.println("DEBUG: Obtendo próximo token (tokenJaObtido=false)");
                         tokenAtual = analisadorLexico.proximoToken();
                         if (tokenAtual != null) {
                             atualizarLinha();
@@ -1499,12 +1583,13 @@ public class AnalisadorSintatico {
                             System.out.println("DEBUG: Fim de arquivo alcançado após shift");
                         }
                     } else {
+                        System.out.println("DEBUG: Token já obtido (tokenJaObtido=true), apenas atualizando linha");
                         atualizarLinha();
                     }
                     if (tokenAtual != null) {
                         System.out.println("DEBUG: Próximo token: " + tokenAtual.lexema + " (tipo=" + tokenAtual.tipo + ")");
                     } else {
-                        System.out.println("DEBUG: Fim de arquivo alcançado");
+                        System.out.println("DEBUG: Fim de arquivo alcançado - tokenAtual é null");
                     }
                     
                     // Resetar contador de reduce ao fazer shift
@@ -1512,6 +1597,7 @@ public class AnalisadorSintatico {
                     ultimoEstado = -1;
                     ultimoToken = null;
                     tokenJaObtido = false;  // Resetar flag
+                    System.out.println("DEBUG: Continuando loop após shift...");
                 } else if (acao.startsWith("r")) {
                     // Reduce: aplicar produção
                     int numProducao = Integer.parseInt(acao.substring(1));
@@ -1577,21 +1663,27 @@ public class AnalisadorSintatico {
                     // Se sim, reduzir I -> id , I (produção 9), senão reduzir I -> id (produção 8)
                     if (estadoAtual == 27 && (tokenStr.equals(":") || tokenStr.equals(")")) && numProducao == 8) {
                         // Verificar se há estado 45 na pilha (indica que temos id , id)
+                        // Precisamos verificar se os últimos estados na pilha são [25 ou 27], 45, 27 (id , id)
+                        // O primeiro id pode estar no estado 25 (após var) ou 27 (após read/write)
                         if (pilhaEstados.size() >= 3) {
                             // Criar uma cópia temporária da pilha para verificar sem modificar
                             Stack<Integer> pilhaTemp = new Stack<>();
                             pilhaTemp.addAll(pilhaEstados);
                             
-                            // Verificar se os últimos 3 estados são 27, 45, 27 (id , id)
+                            // Verificar se os últimos 3 estados são [25 ou 27], 45, 27 (id , id)
+                            // O estado atual (27) está no topo da pilha
                             if (pilhaTemp.size() >= 3) {
-                                int estado3 = pilhaTemp.pop();
-                                int estado2 = pilhaTemp.pop();
-                                int estado1 = pilhaTemp.pop();
+                                int estadoTopo = pilhaTemp.pop(); // Estado atual (27) - segundo id
+                                int estadoMeio = pilhaTemp.pop(); // Deve ser 45 (vírgula)
+                                int estadoBase = pilhaTemp.pop(); // Deve ser 25 ou 27 (primeiro id)
                                 
-                                if (estado3 == 27 && estado2 == 45 && estado1 == 27) {
+                                // O primeiro id pode estar no estado 25 (após var) ou 27 (após read/write)
+                                if (estadoTopo == 27 && estadoMeio == 45 && (estadoBase == 25 || estadoBase == 27)) {
                                     // Temos id , id na pilha, reduzir I -> id , I (produção 9)
-                                    System.out.println("DEBUG: Detectado id , id na pilha, usando produção 9 em vez de 8");
+                                    System.out.println("DEBUG: Detectado id , id na pilha (estados: " + estadoBase + ", " + estadoMeio + ", " + estadoTopo + "), usando produção 9 em vez de 8");
                                     numProducao = 9;
+                                } else {
+                                    System.out.println("DEBUG: Não detectado id , id na pilha. Estados: " + estadoBase + ", " + estadoMeio + ", " + estadoTopo);
                                 }
                             }
                         }
@@ -1603,6 +1695,12 @@ public class AnalisadorSintatico {
                     
                     System.out.println("DEBUG: REDUCE pela produção " + numProducao + ": " + ladoEsquerdo + " -> " + tamanho + " símbolos");
                     System.out.println("DEBUG: Tamanho da pilha antes do reduce: " + pilhaEstados.size());
+                    
+                    // Adicionar ao log do passo a passo
+                    adicionarAoLog(String.format(""));
+                    adicionarAoLog(String.format("  === REDUCE - %d ===", numProducao));
+                    adicionarAoLog(String.format("  Produção %d: %s -> %d símbolo(s)", numProducao, ladoEsquerdo, tamanho));
+                    adicionarAoLog(String.format("  Pilha ANTES: %s", pilhaEstados.toString()));
                     
                     // Verificar se a pilha tem elementos suficientes antes de fazer reduce
                     if (pilhaEstados.size() < tamanho + 1) {
@@ -1639,15 +1737,21 @@ public class AnalisadorSintatico {
                         return false;
                     }
                     System.out.println("DEBUG: Após reduce, estado no topo da pilha: " + pilhaEstados.peek());
+                    adicionarAoLog(String.format("  Estado no topo da pilha: %d", pilhaEstados.peek()));
                     // Não avançar token após reduce
                 } else {
-                    // Erro
+                    // Erro - ação desconhecida
+                    adicionarAoLog("  ERRO: Ação desconhecida!");
                     atualizarLinha();
                     return false;
                 }
             }
             
             // Se chegou aqui, excedeu o limite de iterações (loop infinito)
+            adicionarAoLog("\n═══════════════════════════════════════════════════════");
+            adicionarAoLog("  ERRO: LIMITE DE ITERAÇÕES EXCEDIDO");
+            adicionarAoLog("═══════════════════════════════════════════════════════");
+            adicionarAoLog("  Possível loop infinito detectado!");
             atualizarLinha();
             return false;
             
@@ -1723,52 +1827,65 @@ public class AnalisadorSintatico {
         }
         
         // Desempilhar símbolos do lado direito
+        adicionarAoLog(String.format("  Desempilhando %d estado(s):", tamanho));
+        StringBuilder estadosRemovidos = new StringBuilder();
         for (int i = 0; i < tamanho; i++) {
             if (!pilhaEstados.isEmpty()) {
                 int estadoRemovido = pilhaEstados.pop();
                 System.out.println("DEBUG: Removendo estado " + estadoRemovido + " da pilha");
+                if (estadosRemovidos.length() > 0) estadosRemovidos.append(", ");
+                estadosRemovidos.append(estadoRemovido);
             }
         }
+        adicionarAoLog(String.format("  Estados removidos: [%s]", estadosRemovidos.toString()));
         
         // Obter estado após desempilhar
         if (pilhaEstados.isEmpty()) {
             System.out.println("DEBUG: ERRO - Pilha vazia após desempilhar " + tamanho + " elementos");
+            adicionarAoLog("  ERRO: Pilha vazia após desempilhar!");
             atualizarLinha();
             return false;
         }
         
-        int estadoAtual = pilhaEstados.peek();
-        String chave = estadoAtual + "," + ladoEsquerdo;
+        int estadoAposDesempilhar = pilhaEstados.peek();
+        String chaveGoto = estadoAposDesempilhar + "," + ladoEsquerdo;
         
-        System.out.println("DEBUG: Estado após desempilhar: " + estadoAtual);
-        System.out.println("DEBUG: Buscando GOTO para: " + chave);
+        System.out.println("DEBUG: Estado após desempilhar: " + estadoAposDesempilhar);
+        System.out.println("DEBUG: Buscando GOTO para: " + chaveGoto);
+        adicionarAoLog(String.format("  Estado no topo após desempilhar: %d", estadoAposDesempilhar));
+        adicionarAoLog(String.format("  Consultando TABELA DE GOTOS[%d, %s] = ?", estadoAposDesempilhar, ladoEsquerdo));
         
         // CORREÇÃO ESPECIAL: Se detectamos estado 17 antes do reduce e estamos reduzindo L -> C ;,
         // usar GOTO(17, L) = 31 em vez do GOTO normal
         if (numProducao == 10 && ladoEsquerdo.equals("L") && encontrouEstado17AntesReduce) {
             System.out.println("DEBUG: CORREÇÃO: Reduzindo L -> C ; com estado 17 detectado antes do reduce");
             System.out.println("DEBUG: Usando GOTO(17, L) -> 31 como correção (dentro de bloco begin...end)");
-            chave = "17,L";
-            Integer novoEstadoCorrigido = tabelaGotos.get(chave);
+            adicionarAoLog("  CORREÇÃO: Usando GOTO(17, L) -> 31 (dentro de bloco begin...end)");
+            chaveGoto = "17,L";
+            Integer novoEstadoCorrigido = tabelaGotos.get(chaveGoto);
             if (novoEstadoCorrigido != null) {
-                System.out.println("DEBUG: GOTO encontrado após correção: " + chave + " -> estado " + novoEstadoCorrigido);
+                System.out.println("DEBUG: GOTO encontrado após correção: " + chaveGoto + " -> estado " + novoEstadoCorrigido);
+                adicionarAoLog(String.format("  GOTO(17, L) -> estado %d", novoEstadoCorrigido));
                 pilhaEstados.push(novoEstadoCorrigido);
                 System.out.println("DEBUG: Pilha após GOTO: " + pilhaEstados.toString());
+                adicionarAoLog(String.format(" Pilha após GOTO: %s", pilhaEstados.toString()));
                 return true;
             }
         }
         
         // CORREÇÃO ESPECIAL: Se detectamos estado relacionado a if antes do reduce (mas não estado 17),
         // e estamos reduzindo L -> C ; e o estado atual após desempilhar é 3, usar GOTO(17, L) = 31
-        if (numProducao == 10 && ladoEsquerdo.equals("L") && encontrouEstadoIfAntesReduce && estadoAtual == 3) {
+        if (numProducao == 10 && ladoEsquerdo.equals("L") && encontrouEstadoIfAntesReduce && estadoAposDesempilhar == 3) {
             System.out.println("DEBUG: CORREÇÃO: Reduzindo L -> C ; com estado relacionado a if detectado antes do reduce");
             System.out.println("DEBUG: Usando GOTO(17, L) -> 31 como correção (dentro de bloco begin...end de if)");
-            chave = "17,L";
-            Integer novoEstadoCorrigido = tabelaGotos.get(chave);
+            chaveGoto = "17,L";
+            Integer novoEstadoCorrigido = tabelaGotos.get(chaveGoto);
             if (novoEstadoCorrigido != null) {
-                System.out.println("DEBUG: GOTO encontrado após correção: " + chave + " -> estado " + novoEstadoCorrigido);
+                System.out.println("DEBUG: GOTO encontrado após correção: " + chaveGoto + " -> estado " + novoEstadoCorrigido);
+                adicionarAoLog(String.format("  CORREÇÃO: GOTO(17, L) -> estado %d", novoEstadoCorrigido));
                 pilhaEstados.push(novoEstadoCorrigido);
                 System.out.println("DEBUG: Pilha após GOTO: " + pilhaEstados.toString());
+                adicionarAoLog(String.format("  Pilha após GOTO: %s", pilhaEstados.toString()));
                 return true;
             }
         }
@@ -1777,7 +1894,7 @@ public class AnalisadorSintatico {
         // mas não há GOTO(3, L) definido, isso pode significar que estamos em um contexto especial.
         // Verificar se há algum estado que indica que estamos dentro de um bloco begin...end
         // mesmo que o estado 17 já tenha sido removido
-        if (numProducao == 10 && ladoEsquerdo.equals("L") && estadoAtual == 3) {
+        if (numProducao == 10 && ladoEsquerdo.equals("L") && estadoAposDesempilhar == 3) {
             // Verificar se há estados que indicam que estamos processando um if (estado 19, 35, 54, etc.)
             // ou se há estados que indicam que estamos dentro de um bloco begin...end
             Stack<Integer> pilhaTempApos = new Stack<>();
@@ -1798,12 +1915,14 @@ public class AnalisadorSintatico {
                 // mesmo que o estado 17 não esteja mais na pilha
                 System.out.println("DEBUG: CORREÇÃO: Reduzindo L -> C ; no estado 3, detectado contexto de if/bloco begin...end");
                 System.out.println("DEBUG: Usando GOTO(17, L) -> 31 como correção");
-                chave = "17,L";
-                Integer novoEstadoCorrigido = tabelaGotos.get(chave);
+                chaveGoto = "17,L";
+                Integer novoEstadoCorrigido = tabelaGotos.get(chaveGoto);
                 if (novoEstadoCorrigido != null) {
-                    System.out.println("DEBUG: GOTO encontrado após correção: " + chave + " -> estado " + novoEstadoCorrigido);
+                    System.out.println("DEBUG: GOTO encontrado após correção: " + chaveGoto + " -> estado " + novoEstadoCorrigido);
+                    adicionarAoLog(String.format("  CORREÇÃO: GOTO(17, L) -> estado %d", novoEstadoCorrigido));
                     pilhaEstados.push(novoEstadoCorrigido);
                     System.out.println("DEBUG: Pilha após GOTO: " + pilhaEstados.toString());
+                    adicionarAoLog(String.format("  Pilha após GOTO: %s", pilhaEstados.toString()));
                     return true;
                 }
             }
@@ -1814,15 +1933,15 @@ public class AnalisadorSintatico {
         // Isso pode acontecer quando reduzimos M -> begin L end no estado 31 com "else" e a pilha estava incorreta.
         // Se o lookahead é "else", devemos usar o estado relacionado a if encontrado ANTES do reduce
         // e fazer GOTO para o estado correto.
-        if (numProducao == 29 && ladoEsquerdo.equals("M") && (estadoAtual == 0 || estadoAtual == 3)) {
-            System.out.println("DEBUG: CORREÇÃO: Reduzindo M -> begin L end no estado " + estadoAtual + ", verificando contexto");
+        if (numProducao == 29 && ladoEsquerdo.equals("M") && (estadoAposDesempilhar == 0 || estadoAposDesempilhar == 3)) {
+            System.out.println("DEBUG: CORREÇÃO: Reduzindo M -> begin L end no estado " + estadoAposDesempilhar + ", verificando contexto");
             // Verificar se o lookahead é "else" (indica que estamos processando um if-else)
             boolean lookaheadElse = false;
             if (tokenLookahead != null) {
                 String lookaheadStr = tokenParaString(tokenLookahead);
                 if (lookaheadStr.equals("else")) {
                     lookaheadElse = true;
-                    System.out.println("DEBUG: CORREÇÃO: Detectado 'else' como lookahead ao reduzir M -> begin L end no estado " + estadoAtual);
+                    System.out.println("DEBUG: CORREÇÃO: Detectado 'else' como lookahead ao reduzir M -> begin L end no estado " + estadoAposDesempilhar);
                 }
             }
             
@@ -1833,8 +1952,8 @@ public class AnalisadorSintatico {
                 // Isso é necessário porque quando reduzimos múltiplas vezes, os estados relacionados a if podem já ter sido removidos
                 // mas o "else" ainda indica que estamos dentro de um contexto de if
                 System.out.println("DEBUG: CORREÇÃO: Lookahead 'else' detectado, usando GOTO(35, M) -> 15");
-                chave = "35,M";
-                novoEstadoCorrigido = tabelaGotos.get(chave);
+                chaveGoto = "35,M";
+                novoEstadoCorrigido = tabelaGotos.get(chaveGoto);
                 if (novoEstadoCorrigido == null) {
                     // Se GOTO(35, M) não existe, usar estado 15 como fallback
                     System.out.println("DEBUG: CORREÇÃO: GOTO(35, M) não encontrado, usando estado 15 como fallback");
@@ -1842,12 +1961,14 @@ public class AnalisadorSintatico {
                 }
             } else {
                 // Se o lookahead não é "else", usar o estado 15 que é comum para C -> M como fallback
-                System.out.println("DEBUG: Usando GOTO(" + estadoAtual + ", M) -> 15 como correção (fallback)");
+                System.out.println("DEBUG: Usando GOTO(" + estadoAposDesempilhar + ", M) -> 15 como correção (fallback)");
                 novoEstadoCorrigido = 15; // Estado comum para C -> M
             }
-            System.out.println("DEBUG: GOTO encontrado após correção: " + estadoAtual + ",M -> estado " + novoEstadoCorrigido);
+            System.out.println("DEBUG: GOTO encontrado após correção: " + estadoAposDesempilhar + ",M -> estado " + novoEstadoCorrigido);
+            adicionarAoLog(String.format("  CORREÇÃO: GOTO(%d, M) -> estado %d", estadoAposDesempilhar, novoEstadoCorrigido));
             pilhaEstados.push(novoEstadoCorrigido);
             System.out.println("DEBUG: Pilha após GOTO: " + pilhaEstados.toString());
+            adicionarAoLog(String.format("  Pilha após GOTO: %s", pilhaEstados.toString()));
             return true;
         }
         
@@ -1856,7 +1977,7 @@ public class AnalisadorSintatico {
         // Isso pode acontecer quando reduzimos C -> M no estado 15 após reduzir M -> begin L end no estado 0.
         // Se o lookahead é "else", sabemos que estamos dentro de um contexto de if,
         // então podemos usar GOTO(35, C) -> 54 mesmo que não encontremos estado relacionado a if ANTES do reduce.
-        if (numProducao == 15 && ladoEsquerdo.equals("C") && estadoAtual == 0) {
+        if (numProducao == 15 && ladoEsquerdo.equals("C") && estadoAposDesempilhar == 0) {
             System.out.println("DEBUG: CORREÇÃO: Reduzindo C -> M no estado 0, verificando contexto");
             // Verificar se o lookahead é "else" (indica que estamos processando um if-else)
             boolean lookaheadElse = false;
@@ -1873,8 +1994,8 @@ public class AnalisadorSintatico {
                 // Quando o lookahead é "else", sabemos que estamos dentro de um contexto de if,
                 // então podemos usar GOTO(35, C) -> 54 mesmo que não encontremos estado relacionado a if ANTES do reduce
                 System.out.println("DEBUG: CORREÇÃO: Lookahead 'else' detectado, usando GOTO(35, C) -> 54");
-                chave = "35,C";
-                novoEstadoCorrigido = tabelaGotos.get(chave);
+                chaveGoto = "35,C";
+                novoEstadoCorrigido = tabelaGotos.get(chaveGoto);
                 if (novoEstadoCorrigido == null) {
                     // Se GOTO(35, C) não existe, usar estado 54 como fallback
                     System.out.println("DEBUG: CORREÇÃO: GOTO(35, C) não encontrado, usando estado 54 como fallback");
@@ -1885,28 +2006,32 @@ public class AnalisadorSintatico {
                 System.out.println("DEBUG: Usando GOTO(0, C) -> 10 como correção (fallback)");
                 novoEstadoCorrigido = 10; // Estado comum para L -> C ;
             }
-            System.out.println("DEBUG: GOTO encontrado após correção: " + estadoAtual + ",C -> estado " + novoEstadoCorrigido);
+            System.out.println("DEBUG: GOTO encontrado após correção: " + estadoAposDesempilhar + ",C -> estado " + novoEstadoCorrigido);
+            adicionarAoLog(String.format("  CORREÇÃO: GOTO(%d, C) -> estado %d", estadoAposDesempilhar, novoEstadoCorrigido));
             pilhaEstados.push(novoEstadoCorrigido);
             System.out.println("DEBUG: Pilha após GOTO: " + pilhaEstados.toString());
+            adicionarAoLog(String.format("  Pilha após GOTO: %s", pilhaEstados.toString()));
             return true;
         }
         
         // CORREÇÃO ESPECIAL: Se estamos reduzindo M -> begin L end (produção 29) e o estado atual é 7,
         // isso significa que estamos em um contexto onde M não é esperado diretamente.
         // Precisamos procurar um estado anterior que espera M (como estado 17, 29, etc.)
-        if (numProducao == 29 && ladoEsquerdo.equals("M") && estadoAtual == 7) {
+        if (numProducao == 29 && ladoEsquerdo.equals("M") && estadoAposDesempilhar == 7) {
             System.out.println("DEBUG: CORREÇÃO: Reduzindo M -> begin L end no estado 7, procurando estado anterior que espera M");
             // Verificar se há um estado anterior que espera M
             // O estado 17 é comum para M -> begin L end dentro de blocos
             // Mas também pode ser estado 29, 10, etc.
             // Por enquanto, vamos usar o estado 15 que é comum para C -> M
             System.out.println("DEBUG: Usando GOTO(7, M) -> 15 como correção");
-            chave = "7,M";
-            Integer novoEstadoCorrigido = tabelaGotos.get(chave);
+            chaveGoto = "7,M";
+            Integer novoEstadoCorrigido = tabelaGotos.get(chaveGoto);
             if (novoEstadoCorrigido != null) {
-                System.out.println("DEBUG: GOTO encontrado após correção: " + chave + " -> estado " + novoEstadoCorrigido);
+                System.out.println("DEBUG: GOTO encontrado após correção: " + chaveGoto + " -> estado " + novoEstadoCorrigido);
+                adicionarAoLog(String.format("  CORREÇÃO: GOTO(7, M) -> estado %d", novoEstadoCorrigido));
                 pilhaEstados.push(novoEstadoCorrigido);
                 System.out.println("DEBUG: Pilha após GOTO: " + pilhaEstados.toString());
+                adicionarAoLog(String.format("  Pilha após GOTO: %s", pilhaEstados.toString()));
                 return true;
             }
         }
@@ -1916,7 +2041,7 @@ public class AnalisadorSintatico {
         // Precisamos fazer GOTO para um estado que permita processar o else.
         // Mas na verdade, o estado 7 não deveria estar na pilha neste contexto.
         // Vamos verificar se há um estado 17 na pilha antes do estado 7
-        if (numProducao == 10 && ladoEsquerdo.equals("L") && estadoAtual == 7) {
+        if (numProducao == 10 && ladoEsquerdo.equals("L") && estadoAposDesempilhar == 7) {
             // Verificar se há estado 17 na pilha antes do estado 7
             Stack<Integer> pilhaTemp = new Stack<>();
             pilhaTemp.addAll(pilhaEstados);
@@ -1933,17 +2058,19 @@ public class AnalisadorSintatico {
                 // Estamos dentro de um bloco begin...end, fazer GOTO para estado 31 (M -> begin L # end)
                 System.out.println("DEBUG: CORREÇÃO: Reduzindo L -> C ; no estado 7, detectado estado 17 na pilha");
                 System.out.println("DEBUG: Usando GOTO(7, L) -> 31 como correção (dentro de bloco begin...end)");
-                chave = "7,L";
+                chaveGoto = "7,L";
                 // Mas espera, já temos GOTO(7, L) = 28 definido
                 // Precisamos usar um GOTO diferente ou modificar a lógica
                 // Na verdade, se estamos dentro de um bloco begin...end, o estado anterior deveria ser 17, não 7
                 // Vamos tentar usar GOTO(17, L) = 31
-                chave = "17,L";
-                Integer novoEstadoCorrigido = tabelaGotos.get(chave);
+                chaveGoto = "17,L";
+                Integer novoEstadoCorrigido = tabelaGotos.get(chaveGoto);
                 if (novoEstadoCorrigido != null) {
-                    System.out.println("DEBUG: GOTO encontrado após correção: " + chave + " -> estado " + novoEstadoCorrigido);
+                    System.out.println("DEBUG: GOTO encontrado após correção: " + chaveGoto + " -> estado " + novoEstadoCorrigido);
+                    adicionarAoLog(String.format("  CORREÇÃO: GOTO(17, L) -> estado %d", novoEstadoCorrigido));
                     pilhaEstados.push(novoEstadoCorrigido);
                     System.out.println("DEBUG: Pilha após GOTO: " + pilhaEstados.toString());
+                    adicionarAoLog(String.format("  Pilha após GOTO: %s", pilhaEstados.toString()));
                     return true;
                 }
             }
@@ -1953,7 +2080,7 @@ public class AnalisadorSintatico {
         // mas encontramos "else", significa que estamos dentro de um bloco begin...end de um if.
         // Precisamos fazer GOTO para um estado que permita processar o else.
         // Vamos verificar se há um estado 17 na pilha antes do estado 4
-        if (numProducao == 10 && ladoEsquerdo.equals("L") && estadoAtual == 4) {
+        if (numProducao == 10 && ladoEsquerdo.equals("L") && estadoAposDesempilhar == 4) {
             // Verificar se há estado 17 na pilha antes do estado 4
             Stack<Integer> pilhaTemp = new Stack<>();
             pilhaTemp.addAll(pilhaEstados);
@@ -1972,12 +2099,14 @@ public class AnalisadorSintatico {
                 System.out.println("DEBUG: Usando GOTO(4, L) -> 31 como correção (dentro de bloco begin...end)");
                 // Na verdade, se estamos dentro de um bloco begin...end, o estado anterior deveria ser 17, não 4
                 // Vamos tentar usar GOTO(17, L) = 31
-                chave = "17,L";
-                Integer novoEstadoCorrigido = tabelaGotos.get(chave);
+                chaveGoto = "17,L";
+                Integer novoEstadoCorrigido = tabelaGotos.get(chaveGoto);
                 if (novoEstadoCorrigido != null) {
-                    System.out.println("DEBUG: GOTO encontrado após correção: " + chave + " -> estado " + novoEstadoCorrigido);
+                    System.out.println("DEBUG: GOTO encontrado após correção: " + chaveGoto + " -> estado " + novoEstadoCorrigido);
+                    adicionarAoLog(String.format("  CORREÇÃO: GOTO(17, L) -> estado %d", novoEstadoCorrigido));
                     pilhaEstados.push(novoEstadoCorrigido);
                     System.out.println("DEBUG: Pilha após GOTO: " + pilhaEstados.toString());
+                    adicionarAoLog(String.format("  Pilha após GOTO: %s", pilhaEstados.toString()));
                     return true;
                 }
             }
@@ -1988,7 +2117,7 @@ public class AnalisadorSintatico {
         // Precisamos fazer GOTO para um estado que permita processar o else.
         // NOTA: Mesmo que não haja estado relacionado a if na pilha ANTES do reduce, se o lookahead é "else",
         // sabemos que estamos dentro de um contexto de if, então podemos usar GOTO(17, L) = 31
-        if (numProducao == 10 && ladoEsquerdo.equals("L") && estadoAtual == 3) {
+        if (numProducao == 10 && ladoEsquerdo.equals("L") && estadoAposDesempilhar == 3) {
             // Verificar se o lookahead é "else" (indica que estamos processando um if-else)
             boolean lookaheadElse = false;
             if (tokenLookahead != null) {
@@ -2007,12 +2136,14 @@ public class AnalisadorSintatico {
                 // Estamos dentro de um bloco begin...end e processando um if-else, fazer GOTO para estado 31 (M -> begin L # end)
                 System.out.println("DEBUG: CORREÇÃO: Reduzindo L -> C ; no estado 3, detectado lookahead 'else'");
                 System.out.println("DEBUG: Usando GOTO(17, L) -> 31 como correção (dentro de bloco begin...end de if)");
-                chave = "17,L";
-                Integer novoEstadoCorrigido = tabelaGotos.get(chave);
+                chaveGoto = "17,L";
+                Integer novoEstadoCorrigido = tabelaGotos.get(chaveGoto);
                 if (novoEstadoCorrigido != null) {
-                    System.out.println("DEBUG: GOTO encontrado após correção: " + chave + " -> estado " + novoEstadoCorrigido);
+                    System.out.println("DEBUG: GOTO encontrado após correção: " + chaveGoto + " -> estado " + novoEstadoCorrigido);
+                    adicionarAoLog(String.format("  CORREÇÃO: GOTO(17, L) -> estado %d", novoEstadoCorrigido));
                     pilhaEstados.push(novoEstadoCorrigido);
                     System.out.println("DEBUG: Pilha após GOTO: " + pilhaEstados.toString());
+                    adicionarAoLog(String.format("  Pilha após GOTO: %s", pilhaEstados.toString()));
                     return true;
                 }
             }
@@ -2022,7 +2153,7 @@ public class AnalisadorSintatico {
         // isso significa que desempilhamos estados demais. Precisamos procurar um estado anterior que espera L.
         // Mas o estado 0 é o estado inicial, então não há estado anterior. Neste caso, usar estado 29 como fallback
         // porque L -> C ; L geralmente leva ao estado 29 (L -> C ; L # L)
-        if (numProducao == 11 && ladoEsquerdo.equals("L") && estadoAtual == 0) {
+        if (numProducao == 11 && ladoEsquerdo.equals("L") && estadoAposDesempilhar == 0) {
             System.out.println("DEBUG: CORREÇÃO: Reduzindo L -> C ; L no estado 0, usando estado 29 como fallback");
             Integer novoEstadoCorrigido = 29; // Estado comum para L -> C ; L # L
             System.out.println("DEBUG: GOTO encontrado após correção: 0,L -> estado " + novoEstadoCorrigido);
@@ -2032,20 +2163,24 @@ public class AnalisadorSintatico {
         }
         
         // Obter novo estado do GOTO
-        Integer novoEstado = tabelaGotos.get(chave);
+        Integer novoEstado = tabelaGotos.get(chaveGoto);
         if (novoEstado != null) {
-            System.out.println("DEBUG: GOTO encontrado: " + chave + " -> estado " + novoEstado);
+            System.out.println("DEBUG: GOTO encontrado: " + chaveGoto + " -> estado " + novoEstado);
+            adicionarAoLog(String.format("  GOTO(%d, %s) -> estado %d", estadoAposDesempilhar, ladoEsquerdo, novoEstado));
             pilhaEstados.push(novoEstado);
             System.out.println("DEBUG: Pilha após GOTO: " + pilhaEstados.toString());
+            adicionarAoLog(String.format(" Pilha após GOTO: %s", pilhaEstados.toString()));
             return true;
         } else {
             // Erro: GOTO não encontrado
             // Retornar false de forma controlada, sem lançar exceção
             // A linha já foi atualizada antes de chamar aplicarReduce()
-            System.out.println("DEBUG: ERRO - GOTO não encontrado para " + chave);
-            System.out.println("DEBUG: GOTOs disponíveis para estado " + estadoAtual + ":");
+            System.out.println("DEBUG: ERRO - GOTO não encontrado para " + chaveGoto);
+            adicionarAoLog(String.format("  ERRO: GOTO não encontrado para %s", chaveGoto));
+            System.out.println("DEBUG: GOTOs disponíveis para estado " + estadoAposDesempilhar + ":");
+            adicionarAoLog(String.format("  GOTOs disponíveis para estado %d:", estadoAposDesempilhar));
             for (String key : tabelaGotos.keySet()) {
-                if (key.startsWith(estadoAtual + ",")) {
+                if (key.startsWith(estadoAposDesempilhar + ",")) {
                     System.out.println("  " + key + " -> " + tabelaGotos.get(key));
                 }
             }
@@ -2058,39 +2193,71 @@ public class AnalisadorSintatico {
      * Atualiza a linha atual baseado no token
      * 
      * Calcula a linha contando as quebras de linha no código fonte
-     * até a posição do token atual, buscando a partir da última posição processada
+     * até a posição do token atual, buscando a partir da última posição processada.
+     * 
+     * IMPORTANTE: Para tokens duplicados como múltiplos "id", busca a partir da última
+     * posição processada para encontrar a ocorrência correta.
      */
     private void atualizarLinha() {
         if (tokenAtual != null && codigoFonte != null) {
             String lexema = tokenAtual.lexema;
             
             // Buscar o lexema no código fonte a partir da última posição processada
-            // Isso garante que encontramos a ocorrência correta do token
+            // Isso garante que encontramos a ocorrência correta do token, especialmente
+            // importante para tokens duplicados como múltiplos "id"
             int posicao = codigoFonte.indexOf(lexema, ultimaPosicaoProcessada);
             
-            if (posicao >= 0) {
-                // Contar linhas até a posição encontrada
-                int linhas = 1;
-                for (int i = 0; i < posicao && i < codigoFonte.length(); i++) {
-                    if (codigoFonte.charAt(i) == '\n') {
-                        linhas++;
-                    }
+            // Se não encontrou a partir da última posição, pode ser que o token tenha espaços
+            // ou caracteres especiais ao redor. Tentar buscar considerando apenas caracteres válidos
+            if (posicao < 0) {
+                // Buscar a partir da última posição, mas permitindo espaços em branco antes
+                int buscaInicio = ultimaPosicaoProcessada;
+                while (buscaInicio < codigoFonte.length() && 
+                       (Character.isWhitespace(codigoFonte.charAt(buscaInicio)) || 
+                        codigoFonte.charAt(buscaInicio) == ',' ||
+                        codigoFonte.charAt(buscaInicio) == '(' ||
+                        codigoFonte.charAt(buscaInicio) == ')' ||
+                        codigoFonte.charAt(buscaInicio) == ';')) {
+                    buscaInicio++;
                 }
-                linhaAtual = linhas;
+                posicao = codigoFonte.indexOf(lexema, buscaInicio);
+            }
+            
+            if (posicao >= 0) {
+                // Verificar se a posição encontrada é válida (não está no meio de outro token)
+                // Por exemplo, se buscamos "id", não queremos encontrar "id" dentro de "read"
+                if (posicao > 0 && Character.isLetterOrDigit(codigoFonte.charAt(posicao - 1))) {
+                    // Está no meio de outro token, buscar próxima ocorrência
+                    posicao = codigoFonte.indexOf(lexema, posicao + 1);
+                }
                 
-                // Atualizar a última posição processada para depois do token atual
-                // Isso garante que na próxima busca encontremos o próximo token
-                ultimaPosicaoProcessada = posicao + lexema.length();
-                
-                // Verificar se há quebras de linha dentro do token (para tokens multi-linha)
-                for (int i = posicao; i < ultimaPosicaoProcessada && i < codigoFonte.length(); i++) {
-                    if (codigoFonte.charAt(i) == '\n') {
-                        linhaAtual++;
+                if (posicao >= 0) {
+                    // Contar linhas até a posição encontrada
+                    int linhas = 1;
+                    for (int i = 0; i < posicao && i < codigoFonte.length(); i++) {
+                        if (codigoFonte.charAt(i) == '\n') {
+                            linhas++;
+                        }
                     }
+                    linhaAtual = linhas;
+                    
+                    // Atualizar a última posição processada para depois do token atual
+                    // Isso garante que na próxima busca encontremos o próximo token
+                    ultimaPosicaoProcessada = posicao + lexema.length();
+                    
+                    // Verificar se há quebras de linha dentro do token (para tokens multi-linha)
+                    for (int i = posicao; i < ultimaPosicaoProcessada && i < codigoFonte.length(); i++) {
+                        if (codigoFonte.charAt(i) == '\n') {
+                            linhaAtual++;
+                        }
+                    }
+                } else {
+                    // Se ainda não encontrou, manter a linha atual (não resetar)
+                    System.out.println("DEBUG: Aviso - Não foi possível encontrar posição do token '" + lexema + "' após posição " + ultimaPosicaoProcessada);
                 }
             } else {
                 // Se não encontrar a partir da última posição, tentar buscar do início
-                // (pode acontecer em casos especiais)
+                // (pode acontecer em casos especiais, mas não é ideal)
                 posicao = codigoFonte.indexOf(lexema);
                 if (posicao >= 0) {
                     int linhas = 1;
@@ -2101,8 +2268,11 @@ public class AnalisadorSintatico {
                     }
                     linhaAtual = linhas;
                     ultimaPosicaoProcessada = posicao + lexema.length();
+                    System.out.println("DEBUG: Aviso - Token '" + lexema + "' encontrado do início do arquivo (posição " + posicao + ")");
+                } else {
+                    // Se ainda não encontrar, manter a linha atual (não resetar)
+                    System.out.println("DEBUG: Aviso - Não foi possível encontrar token '" + lexema + "' no código fonte");
                 }
-                // Se ainda não encontrar, manter a linha atual
             }
         }
     }
@@ -2170,6 +2340,24 @@ public class AnalisadorSintatico {
      */
     public int getLinhaErro() {
         return linhaAtual;
+    }
+    
+    /**
+     * Retorna o log do passo a passo da análise sintática
+     * 
+     * @return String contendo o passo a passo detalhado da análise
+     */
+    public String getPassoAPasso() {
+        return logPassoAPasso.toString();
+    }
+    
+    /**
+     * Adiciona uma entrada formatada ao log do passo a passo
+     * 
+     * @param mensagem Mensagem a ser adicionada ao log
+     */
+    private void adicionarAoLog(String mensagem) {
+        logPassoAPasso.append(mensagem).append("\n");
     }
     
     /**

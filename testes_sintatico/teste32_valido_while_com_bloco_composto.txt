@@ -1,0 +1,10 @@
+program id;
+var id, id : integer;
+begin
+    while id < num do
+        begin
+            id := id + num;
+            id := id * num;
+        end;
+end.
+

@@ -1,0 +1,9 @@
+program id;
+var id, id : boolean;
+begin
+    if id then
+        id := id;
+    if id then
+        id := id;
+end.
+

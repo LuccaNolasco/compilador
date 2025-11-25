@@ -16,7 +16,6 @@ import sintatico.AnalisadorSintatico;
 
 // Importações para manipulação de arquivos
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Locale;
@@ -151,27 +150,10 @@ public class TelaAnalisadorSintatico {
         Button btnSelecionarEntrada = new Button("Selecionar Arquivo");
         btnSelecionarEntrada.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 5;");
         
-        // Campo para arquivo de saída (opcional)
-        Label lblSaida = new Label("Arquivo de Saída (opcional):");
-        lblSaida.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-        
-        TextField txtCaminhoSaida = new TextField();
-        txtCaminhoSaida.setPrefWidth(450);
-        txtCaminhoSaida.setPromptText("sintatico_saida.txt");
-        
-        // Configurar suporte a caracteres brasileiros
-        configurarInputMethodBrasileiro(txtCaminhoSaida);
-        
-        Button btnSelecionarSaida = new Button("Selecionar Local");
-        btnSelecionarSaida.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 5;");
-        
         // Organizar campos de arquivo em grid
         fileGrid.add(lblEntrada, 0, 0);
         fileGrid.add(txtCaminhoEntrada, 1, 0);
         fileGrid.add(btnSelecionarEntrada, 2, 0);
-        fileGrid.add(lblSaida, 0, 1);
-        fileGrid.add(txtCaminhoSaida, 1, 1);
-        fileGrid.add(btnSelecionarSaida, 2, 1);
         
         // --- Área de visualização do código fonte ---
         Label lblConteudo = new Label("Conteúdo do Arquivo:");
@@ -196,11 +178,11 @@ public class TelaAnalisadorSintatico {
         lblResultados.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         
         TextArea txtResultados = new TextArea();
-        txtResultados.setPrefRowCount(8);
-        txtResultados.setPrefHeight(150);
+        txtResultados.setPrefRowCount(30);
+        txtResultados.setPrefHeight(600);
         txtResultados.setEditable(false);  // Somente leitura
         txtResultados.setPromptText("O resultado da análise sintática aparecerá aqui...");
-        txtResultados.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; -fx-background-color: #ecf0f1;");
+        txtResultados.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-background-color: #ecf0f1;");
         
         // Configurar suporte a caracteres brasileiros (mesmo sendo read-only)
         configurarInputMethodBrasileiro(txtResultados);
@@ -249,24 +231,6 @@ public class TelaAnalisadorSintatico {
             }
         });
         
-        // Evento do botão "Selecionar Local" (saída)
-        btnSelecionarSaida.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Selecionar local para salvar resultados");
-            fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Arquivos de texto", "*.txt")
-            );
-            
-            // Sugerir nome padrão para o arquivo de saída
-            fileChooser.setInitialFileName("sintatico_saida.txt");
-            
-            File arquivo = fileChooser.showSaveDialog(primaryStage);
-            if (arquivo != null) {
-                // Exibir caminho completo do arquivo de saída
-                txtCaminhoSaida.setText(arquivo.getAbsolutePath());
-            }
-        });
-        
         // Evento do botão "ANALISAR" (principal)
         btnAnalisar.setOnAction(e -> {
             String conteudo = txtConteudo.getText();
@@ -278,16 +242,10 @@ public class TelaAnalisadorSintatico {
             // Executar análise sintática do código
             String resultado = analisarCodigo(conteudo, lblStatus);
             txtResultados.setText(resultado);
-            
-            // Salvar resultados automaticamente se arquivo de saída foi especificado
-            String caminhoSaida = txtCaminhoSaida.getText();
-            if (!caminhoSaida.isEmpty()) {
-                salvarResultados(resultado, caminhoSaida);
-            }
         });
         
         // Retornar a cena configurada com dimensões fixas
-        return new Scene(root, 1200, 800);
+        return new Scene(root, 1600, 1000);
     }
     
     /**
@@ -303,10 +261,10 @@ public class TelaAnalisadorSintatico {
         // TextArea para números das linhas (somente leitura)
         TextArea txtNumerosLinhas = new TextArea();
         txtNumerosLinhas.setPrefWidth(60);
-        txtNumerosLinhas.setPrefRowCount(15);
-        txtNumerosLinhas.setPrefHeight(200);
+        txtNumerosLinhas.setPrefRowCount(35);
+        txtNumerosLinhas.setPrefHeight(600);
         txtNumerosLinhas.setEditable(false);
-        txtNumerosLinhas.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px; " +
+        txtNumerosLinhas.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 18px; " +
                                   "-fx-background-color: #e8e8e8; -fx-text-fill: #666; " +
                                   "-fx-padding: 5px; -fx-border-color: #ccc; -fx-border-width: 0 1 0 0; " +
                                   "-fx-text-alignment: right;");
@@ -314,10 +272,11 @@ public class TelaAnalisadorSintatico {
         
         // TextArea para conteúdo do arquivo
         TextArea txtConteudo = new TextArea();
-        txtConteudo.setPrefRowCount(15);
-        txtConteudo.setPrefHeight(200);
+        txtConteudo.setPrefRowCount(35);
+        txtConteudo.setPrefHeight(600);
+        txtConteudo.setPrefWidth(1400);  // Aumentar largura da caixa de conteúdo
         txtConteudo.setPromptText("O conteúdo do arquivo selecionado aparecerá aqui...");
-        txtConteudo.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
+        txtConteudo.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 18px;");
         
         // Sincronizar rolagem vertical entre as duas áreas
         txtConteudo.textProperty().addListener((obs, oldText, newText) -> {
@@ -416,29 +375,32 @@ public class TelaAnalisadorSintatico {
             // Executar análise
             boolean aceito = analisador.analisar();
             
+            // Adicionar passo a passo ao resultado
+            resultado.append(analisador.getPassoAPasso());
+            
+            // Adicionar resultado final
+            resultado.append("\n");
+            resultado.append("========================================\n");
             if (aceito) {
-                resultado.append("========================================\n");
-                resultado.append("       PROGRAMA ACEITO\n");
+                resultado.append("       ✓ PROGRAMA ACEITO\n");
                 resultado.append("========================================\n");
                 resultado.append("O programa foi analisado sintaticamente e está correto.\n");
-                resultado.append("========================================\n");
                 
                 // Atualizar label de status com cor verde
                 lblStatus.setText("✓ PROGRAMA ACEITO");
                 lblStatus.setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold; -fx-font-size: 16px;");
             } else {
                 int linhaErro = analisador.getLinhaErro();
-                resultado.append("========================================\n");
-                resultado.append("       PROGRAMA NÃO ACEITO\n");
+                resultado.append("       ✖ PROGRAMA NÃO ACEITO\n");
                 resultado.append("========================================\n");
                 resultado.append("Erro sintático encontrado provavelmente próximo a linha: ").append(linhaErro).append("\n");
                 resultado.append("O programa não está de acordo com a gramática da linguagem.\n");
-                resultado.append("========================================\n");
                 
                 // Atualizar label de status com cor vermelha
                 lblStatus.setText("✖ PROGRAMA NÃO ACEITO");
                 lblStatus.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-font-size: 16px;");
             }
+            resultado.append("========================================\n");
             
         } catch (Exception e) {
             // Capturar e reportar qualquer erro durante a análise
@@ -454,32 +416,6 @@ public class TelaAnalisadorSintatico {
         }
         
         return resultado.toString();
-    }
-    
-    /**
-     * Salva os resultados da análise sintática em um arquivo
-     * 
-     * Grava o conteúdo dos resultados no arquivo especificado
-     * e exibe uma confirmação para o usuário.
-     */
-    private void salvarResultados(String resultados, String caminho) {
-        try {
-            // Criar e escrever no arquivo
-            FileWriter writer = new FileWriter(caminho);
-            writer.write(resultados);
-            writer.close();
-            
-            // Confirmar sucesso para o usuário
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Sucesso");
-            alert.setHeaderText(null);
-            alert.setContentText("Resultados salvos em: " + caminho);
-            alert.showAndWait();
-            
-        } catch (IOException e) {
-            // Exibir erro caso não consiga salvar
-            mostrarAviso("Erro ao salvar arquivo: " + e.getMessage());
-        }
     }
     
     /**

@@ -1,0 +1,16 @@
+program id;
+var id : integer;
+begin
+    id := num;
+    while id < num do
+    begin
+        id := id + num;
+        write(id);
+    end;
+    if id > num then
+    begin
+        id := id * num;
+        writeln(id);
+    end;
+end.
+

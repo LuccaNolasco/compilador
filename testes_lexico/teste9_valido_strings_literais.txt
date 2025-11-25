@@ -1,0 +1,7 @@
+program x;
+begin
+    write("hello");
+    write("world");
+    writeln("test");
+end.
+

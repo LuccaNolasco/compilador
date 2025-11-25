@@ -1,6 +1,0 @@
-program exemplo;
-begin
-    readln;
-    x := 10;
-end.
-

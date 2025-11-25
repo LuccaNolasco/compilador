@@ -1,0 +1,9 @@
+program id;
+var id : integer;
+begin
+    readln(id);
+    writeln(id);
+    readln;
+    writeln;
+end.
+

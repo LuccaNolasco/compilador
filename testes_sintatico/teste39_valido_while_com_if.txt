@@ -1,0 +1,10 @@
+program id;
+var id, id : integer;
+begin
+    while id < num do
+        if id > num then
+            id := id + num
+        else
+            id := id + num;
+end.
+

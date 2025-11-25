@@ -1,0 +1,7 @@
+program x;
+begin
+    x := 123;
+    y := 456.78;
+    z := -42;
+end.
+

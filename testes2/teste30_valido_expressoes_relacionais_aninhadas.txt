@@ -1,9 +1,0 @@
-program exemplo;
-var x, y, z : integer;
-begin
-    if (x + y) < (z * 2) then
-        x := 10;
-    if (x - y) >= (z / 2) then
-        y := 20;
-end.
-

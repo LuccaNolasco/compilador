@@ -1,0 +1,8 @@
+program id;
+var id, id, id : integer;
+begin
+    id := num + num * num - num;
+    id := (id + id) / num - num;
+    id := id * id + id / num - num;
+end.
+

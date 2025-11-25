@@ -1,6 +1,0 @@
-program exemplo;
-var x, y;
-begin
-    x := 10;
-end.
-

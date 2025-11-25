@@ -1,0 +1,13 @@
+program id;
+var id, id : integer;
+begin
+    read(id, id);
+    id := id + id;
+    write(str, id);
+    writeln;
+    if id > num then
+        writeln(str)
+    else
+        writeln(str);
+end.
+
